@@ -1,0 +1,49 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <link rel="icon" type="image/svg+xml" href="./vite.svg" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="description" content="F1 Live Insights - Real-time statistics, standings, calendar, race results, and driver profiles for the current Formula 1 season." />
+    <title>F1 Live Insights - Dashboard</title>
+    <script>
+      window.addEventListener('error', function(event) {
+        var errorDiv = document.createElement('div');
+        errorDiv.style.position = 'fixed';
+        errorDiv.style.top = '0';
+        errorDiv.style.left = '0';
+        errorDiv.style.width = '100%';
+        errorDiv.style.height = '100%';
+        errorDiv.style.backgroundColor = '#8b0000';
+        errorDiv.style.color = '#ffffff';
+        errorDiv.style.padding = '30px';
+        errorDiv.style.fontFamily = 'monospace';
+        errorDiv.style.zIndex = '999999';
+        errorDiv.style.overflow = 'auto';
+        errorDiv.innerHTML = '<h2>[Runtime Error]</h2><p>' + event.message + '</p><p>File: ' + event.filename + ':' + event.lineno + '</p><pre>' + (event.error ? event.error.stack : '') + '</pre>';
+        document.body.appendChild(errorDiv);
+      });
+      window.addEventListener('unhandledrejection', function(event) {
+        var errorDiv = document.createElement('div');
+        errorDiv.style.position = 'fixed';
+        errorDiv.style.top = '0';
+        errorDiv.style.left = '0';
+        errorDiv.style.width = '100%';
+        errorDiv.style.height = '100%';
+        errorDiv.style.backgroundColor = '#8b0000';
+        errorDiv.style.color = '#ffffff';
+        errorDiv.style.padding = '30px';
+        errorDiv.style.fontFamily = 'monospace';
+        errorDiv.style.zIndex = '999999';
+        errorDiv.style.overflow = 'auto';
+        errorDiv.innerHTML = '<h2>[Unhandled Promise Rejection]</h2><p>' + event.reason + '</p>';
+        document.body.appendChild(errorDiv);
+      });
+    </script>
+    <script type="module" crossorigin src="./assets/index-DoN2PRrg.js"></script>
+    <link rel="stylesheet" crossorigin href="./assets/index-DOmtDlY_.css">
+  </head>
+  <body>
+    <div id="root"></div>
+  </body>
+</html>
