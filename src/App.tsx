@@ -338,9 +338,32 @@ function App() {
       (activeTab === 'dashboard' && !isMobile) ? 'overflow-hidden' : 'overflow-y-auto'
     }`}>
       
+      {/* Apple Style Product Title Overlay */}
+      {activeTab === 'dashboard' && (
+        <div className="absolute top-24 left-6 md:left-12 z-30 pointer-events-none select-none max-w-lg font-display">
+          <motion.h1 
+            initial={{ opacity: 0, y: 15 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.8, ease: [0.16, 1, 0.3, 1] }}
+            className="text-3xl md:text-5xl lg:text-6xl font-black uppercase tracking-tight text-text-primary leading-[0.9]"
+            style={{ fontSize: 'clamp(2rem, 5vw, 4.2rem)', letterSpacing: '-0.03em' }}
+          >
+            SF90 Stradale
+          </motion.h1>
+          <motion.p 
+            initial={{ opacity: 0, y: 10 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.8, delay: 0.15, ease: [0.16, 1, 0.3, 1] }}
+            className="text-[10px] md:text-xs font-bold uppercase tracking-widest text-[#ff1801] mt-1"
+          >
+            Telemetry Configurator
+          </motion.p>
+        </div>
+      )}
+
       {/* 3D Scene Wrapper - Absolute Background */}
       <div className={`${
-        isMobile && activeTab === 'dashboard' ? 'relative w-full h-[40vh] shrink-0 order-2 mt-16' : 'absolute inset-0 w-full h-full'
+        activeTab === 'dashboard' ? 'absolute inset-0 w-full h-dvh' : 'absolute inset-0 w-full h-full pointer-events-none'
       } z-0`}>
         <F1Scene
           color={carColor}

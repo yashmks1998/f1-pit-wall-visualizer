@@ -1,7 +1,8 @@
-import { useState, useEffect } from 'react';
-import { Gauge, Settings, ShieldAlert, Zap } from 'lucide-react';
+import { useEffect } from 'react';
+import { Gauge, Settings, ShieldAlert, Zap, X } from 'lucide-react';
 import { COLOR_PRESETS } from '../utils/f1Constants';
 import { useMediaQuery } from '../hooks/useMediaQuery';
+import { motion, AnimatePresence } from 'framer-motion';
 
 interface Telemetry {
   speed: number;
@@ -61,18 +62,18 @@ export function PitWallDashboard({
   selectedPart,
   activePartInfo,
   setSelectedPart,
+  mobilePanel,
+  setMobilePanel,
 }: PitWallDashboardProps) {
 
   const isMobile = useMediaQuery('(max-width: 768px)');
-  const [telemetryExpanded, setTelemetryExpanded] = useState(false);
-  const [configExpanded, setConfigExpanded] = useState(false);
 
-  // Auto-expand configurator on mobile when a part is focused
+  // Auto-open configurator drawer on mobile when a hotspot is tapped
   useEffect(() => {
     if (selectedPart && isMobile) {
-      setConfigExpanded(true);
+      setMobilePanel('configurator');
     }
-  }, [selectedPart, isMobile]);
+  }, [selectedPart, isMobile, setMobilePanel]);
 
   // Calculate RPM LED lights count
   const maxRpm = 15000;
@@ -80,341 +81,420 @@ export function PitWallDashboard({
   const ledCount = 10;
   const activeLeds = Math.round(rpmPercent * ledCount);
 
-  // G-Force Coordinate Mapping (visualizing lateral g-force on a target crosshair)
-  // G-Force usually peaks around 5.8G. We scale it to center (0,0) with offset.
+  // G-Force Coordinate Mapping
   const gMax = 6.0;
-  // Simulate lateral coordinate shifts based on g-force wave/simulation
-  const gX = Math.sin(performance.now() * 0.003) * (telemetry.gForce / gMax) * 40;
-  const gY = Math.cos(performance.now() * 0.003) * (telemetry.gForce / gMax) * 40;
+  const gX = Math.sin(performance.now() * 0.003) * (telemetry.gForce / gMax) * 30;
+  const gY = Math.cos(performance.now() * 0.003) * (telemetry.gForce / gMax) * 30;
 
-  return (
-    <div className="grid grid-cols-12 gap-4 lg:gap-6 w-full h-full flex-1 items-end pointer-events-none mt-4 lg:mt-10">
-      
-      {/* Mobile Telemetry Accordion Header */}
-      {isMobile && (
-        <button 
-          onClick={() => setTelemetryExpanded(!telemetryExpanded)}
-          className="col-span-12 flex items-center justify-between bg-black/60 border border-white/10 px-4 py-3.5 rounded-2xl pointer-events-auto shadow-md"
-        >
-          <div className="flex items-center gap-2">
-            <Gauge className="w-4 h-4 text-[#ff1801] animate-pulse" />
-            <span className="font-bold text-xs uppercase tracking-wider text-white">📊 F1 Telemetry Console</span>
-          </div>
-          <span className="text-[10px] text-gray-400 font-black uppercase tracking-wider">{telemetryExpanded ? '▲ Collapse' : '▼ Expand'}</span>
-        </button>
-      )}
+  // Render Telemetry Module
+  const renderTelemetry = () => (
+    <div className="glass-panel border border-border p-6 flex flex-col gap-4 relative overflow-hidden bg-white/70 dark:bg-black/70 shadow-sm backdrop-blur-md">
+      {/* Accent light decoration */}
+      <div className="absolute top-0 right-0 w-24 h-24 bg-[#ff1801]/5 rounded-bl-full pointer-events-none"></div>
 
-      {/* ── Left Column: Telemetry Console ── */}
-      {(!isMobile || telemetryExpanded) && (
-        <div className={`col-span-12 lg:col-span-4 self-end pointer-events-auto mb-4 animate-slide-up`}>
-        <div className="glass-panel glass-panel-accent p-5 flex flex-col gap-4 border border-white/10 relative overflow-hidden">
-          
-          {/* Ambient red light effect */}
-          <div className="absolute top-0 right-0 w-24 h-24 bg-[#ff1801]/5 rounded-bl-full pointer-events-none"></div>
+      <div className="flex items-center justify-between border-b border-border pb-2">
+        <div className="flex items-center gap-2">
+          <Gauge className="w-4 h-4 text-[#ff1801]" />
+          <span className="font-extrabold text-xs uppercase tracking-widest text-text-primary">Live Telemetry</span>
+        </div>
+        <span className="text-[9px] font-black text-[#ff1801] bg-[#ff1801]/10 px-2 py-0.5 rounded border border-[#ff1801]/20 uppercase tracking-wider font-mono-numbers">
+          Active Feed
+        </span>
+      </div>
 
-          <div className="flex items-center justify-between border-b border-white/10 pb-2">
-            <div className="flex items-center gap-2">
-              <Gauge className="w-5 h-5 text-[#ff1801] animate-pulse" />
-              <span className="font-bold text-xs uppercase tracking-widest text-white/70">SF90 Live Telemetry Console</span>
-            </div>
-            <span className="text-[9px] font-extrabold text-[#ff1801] bg-[#ff1801]/10 px-2 py-0.5 rounded border border-[#ff1801]/20 uppercase tracking-wider font-mono-numbers">
-              Live Feed
-            </span>
-          </div>
-
-          {/* RPM LED Bar */}
-          <div className="flex flex-col gap-1.5">
-            <div className="flex justify-between text-[8px] font-black uppercase text-gray-500 tracking-wider">
-              <span>Engine RPM Tachometer</span>
-              <span className="font-mono-numbers text-white">{telemetry.rpm.toLocaleString()} / 15,000</span>
-            </div>
-            <div className="flex gap-1 bg-black/40 p-1.5 rounded-lg border border-white/5">
-              {Array.from({ length: ledCount }).map((_, index) => {
-                const isActive = index < activeLeds;
-                let ledColor = 'bg-gray-800';
-                if (isActive) {
-                  ledColor = index < 6 ? 'bg-green-500 shadow-[0_0_8px_rgba(34,197,94,0.5)]'
-                           : index < 8 ? 'bg-yellow-500 shadow-[0_0_8px_rgba(234,179,8,0.5)]'
-                           : 'bg-red-600 shadow-[0_0_10px_rgba(239,68,68,0.8)] animate-pulse';
-                }
-                return (
-                  <div key={index} className={`flex-1 h-2.5 rounded-sm transition-all duration-75 ${ledColor}`}></div>
-                );
-              })}
-            </div>
-          </div>
-
-          {/* Gear & Speed Dashboard Layout */}
-          <div className="grid grid-cols-12 gap-3 items-center border-t border-white/5 pt-3">
-            {/* Big Gear Counter */}
-            <div className="col-span-4 flex flex-col items-center justify-center border-r border-white/10 pr-3">
-              <span 
-                className="font-black text-white tracking-tighter font-mono-numbers leading-none drop-shadow-[0_2px_8px_rgba(255,255,255,0.15)]"
-                style={{ fontSize: 'clamp(2.5rem, 8vw, 3.5rem)' }}
-              >
-                {telemetry.gear}
-              </span>
-              <span className="text-[9px] font-black text-gray-400 uppercase tracking-widest mt-1">Gear</span>
-            </div>
-
-            {/* Speed & RPM Stats */}
-            <div className="col-span-8 flex flex-col gap-1 pl-2">
-              <div className="flex items-baseline justify-between">
-                <span 
-                  className="font-extrabold text-white font-mono-numbers leading-none"
-                  style={{ fontSize: 'clamp(1.5rem, 5vw, 2rem)' }}
-                >
-                  {telemetry.speed}
-                </span>
-                <span className="text-[10px] font-black text-[#ff1801] uppercase tracking-widest ml-1">KM/H</span>
-              </div>
-              <div className="flex items-baseline justify-between border-t border-white/5 pt-1.5">
-                <span className="text-[9px] uppercase tracking-widest text-gray-500 font-bold">Lap Time</span>
-                <span className="text-sm font-bold text-white font-mono-numbers">{telemetry.lapTime}</span>
-              </div>
-            </div>
-          </div>
-
-          {/* Throttle & Brake visualizer bars */}
-          <div className="flex flex-col gap-2 border-t border-white/5 pt-3">
-            <div className="grid grid-cols-12 gap-2 items-center text-[9px] font-bold uppercase tracking-wider text-gray-400">
-              <span className="col-span-3 text-emerald-400 flex items-center gap-0.5">
-                <Zap className="w-3 h-3" />
-                THR
-              </span>
-              <div className="col-span-7 telemetry-bar bg-black/40 border border-white/5">
-                <div className="telemetry-bar-fill-throttle" style={{ width: `${telemetry.throttle}%` }}></div>
-              </div>
-              <span className="col-span-2 text-right font-mono-numbers text-white">{telemetry.throttle}%</span>
-            </div>
-
-            <div className="grid grid-cols-12 gap-2 items-center text-[9px] font-bold uppercase tracking-wider text-gray-400">
-              <span className="col-span-3 text-red-500 flex items-center gap-0.5">
-                <ShieldAlert className="w-3 h-3" />
-                BRK
-              </span>
-              <div className="col-span-7 telemetry-bar bg-black/40 border border-white/5">
-                <div className="telemetry-bar-fill-brake" style={{ width: `${telemetry.brake}%` }}></div>
-              </div>
-              <span className="col-span-2 text-right font-mono-numbers text-white">{telemetry.brake}%</span>
-            </div>
-          </div>
-
-          {/* G-Force crosshair & Lateral Force Feed */}
-          <div className="grid grid-cols-12 gap-3 border-t border-white/5 pt-3 items-center">
-            
-            {/* G-Force Crosshair bubble chart */}
-            <div className="col-span-4 flex items-center justify-center">
-              <div className="w-16 h-16 rounded-full border border-white/10 relative bg-black/40 flex items-center justify-center">
-                {/* Axes */}
-                <div className="absolute top-0 bottom-0 left-1/2 w-px bg-white/5"></div>
-                <div className="absolute left-0 right-0 top-1/2 h-px bg-white/5"></div>
-                <div className="w-8 h-8 rounded-full border border-white/5 absolute"></div>
-                
-                {/* G-Force bubble indicator */}
-                <span 
-                  className="absolute w-2 h-2 rounded-full bg-[#ff1801] shadow-[0_0_8px_#ff1801] transition-all duration-75"
-                  style={{ transform: `translate(${gX}px, ${gY}px)` }}
-                ></span>
-              </div>
-            </div>
-
-            <div className="col-span-8 flex flex-col gap-1.5 pl-2 text-left">
-              <span className="text-[9px] font-bold text-gray-500 uppercase tracking-widest">Lateral G-Force</span>
-              <span className="text-base font-extrabold text-white font-mono-numbers">
-                {telemetry.gForce} <span className="text-xs text-[#ff1801]">G</span>
-              </span>
-              <span className="text-[8px] text-gray-400 italic">SF90 Peak decel: 5.8G</span>
-            </div>
-          </div>
-
+      {/* RPM LED Bar */}
+      <div className="flex flex-col gap-1.5">
+        <div className="flex justify-between text-[8px] font-black uppercase text-text-secondary tracking-wider">
+          <span>Engine RPM Tachometer</span>
+          <span className="font-mono-numbers text-text-primary">{telemetry.rpm.toLocaleString()} / 15,000</span>
+        </div>
+        <div className="flex gap-1 bg-bg-primary p-1.5 rounded-full border border-border">
+          {Array.from({ length: ledCount }).map((_, index) => {
+            const isActive = index < activeLeds;
+            let ledColor = 'bg-border/30 dark:bg-border/20';
+            if (isActive) {
+              ledColor = index < 6 ? 'bg-green-500 shadow-[0_0_8px_rgba(34,197,94,0.5)]'
+                       : index < 8 ? 'bg-yellow-500 shadow-[0_0_8px_rgba(234,179,8,0.5)]'
+                       : 'bg-red-600 shadow-[0_0_10px_rgba(239,68,68,0.8)] animate-pulse';
+            }
+            return (
+              <div key={index} className={`flex-1 h-1.5 rounded-full transition-all duration-75 ${ledColor}`}></div>
+            );
+          })}
         </div>
       </div>
-      )}
 
-      {/* Center Spacer: empty for 3D model */}
-      <div className="hidden lg:block lg:col-span-4 h-1 pointer-events-none"></div>
+      {/* Gear & Speed Dashboard Layout */}
+      <div className="grid grid-cols-12 gap-3 items-center border-t border-border pt-3">
+        {/* Big Gear Counter */}
+        <div className="col-span-4 flex flex-col items-center justify-center border-r border-border pr-3">
+          <span 
+            className="font-black text-text-primary tracking-tighter font-mono-numbers leading-none drop-shadow-[0_2px_8px_var(--border)]"
+            style={{ fontSize: 'clamp(2.5rem, 8vw, 3.5rem)' }}
+          >
+            {telemetry.gear}
+          </span>
+          <span className="text-[9px] font-black text-text-secondary uppercase tracking-widest mt-1">Gear</span>
+        </div>
 
-      {/* Mobile Configurator Accordion Header */}
-      {isMobile && (
-        <button 
-          onClick={() => setConfigExpanded(!configExpanded)}
-          className="col-span-12 flex items-center justify-between bg-black/60 border border-white/10 px-4 py-3.5 rounded-2xl pointer-events-auto shadow-md mt-2"
-        >
-          <div className="flex items-center gap-2">
-            <Settings className="w-4 h-4 text-[#ff1801]" />
-            <span className="font-bold text-xs uppercase tracking-wider text-white">🔧 SF90 Configurator</span>
-          </div>
-          <span className="text-[10px] text-gray-400 font-black uppercase tracking-wider">{configExpanded ? '▲ Collapse' : '▼ Expand'}</span>
-        </button>
-      )}
-
-      {/* ── Right Column: Configurator & Parts Focus ── */}
-      {(!isMobile || configExpanded) && (
-        <div className={`col-span-12 lg:col-span-4 self-end pointer-events-auto flex flex-col gap-4 mb-4 animate-slide-up`}>
-        
-        {/* Active Car Component hotspot card */}
-        {selectedPart && activePartInfo && (
-          <div className="glass-panel p-5 border border-white/10 flex flex-col gap-3 relative overflow-hidden animate-slide-up">
-            <div className="absolute top-0 right-0 p-3 z-10">
-              <button 
-                onClick={() => setSelectedPart(null)}
-                className="text-gray-400 hover:text-white font-bold text-[9px] bg-white/5 hover:bg-white/10 border border-white/5 hover:border-white/10 px-2 py-0.5 rounded-md uppercase tracking-wider transition-all"
-              >
-                Deselect
-              </button>
-            </div>
-
-            <div className="flex flex-col font-sans">
-              <span className="text-[9px] font-extrabold text-[#ff1801] uppercase tracking-widest">Active Component Focus</span>
-              <h4 className="text-base font-black text-white uppercase tracking-tight mt-0.5">{activePartInfo.title}</h4>
-              <span className="text-[10px] font-semibold text-gray-400 italic mt-0.5">{activePartInfo.subtitle}</span>
-            </div>
-
-            <p className="text-xs text-gray-300 leading-relaxed border-t border-white/5 pt-2 text-justify">
-              {activePartInfo.description}
-            </p>
-
-            <div className="flex flex-col gap-1.5 mt-1 bg-black/30 p-2.5 rounded-xl border border-white/5 font-semibold text-xs">
-              {activePartInfo.stats.map(stat => (
-                <div key={stat.label} className="flex justify-between items-center">
-                  <span className="text-gray-400">{stat.label}</span>
-                  <span className="text-white font-mono-numbers">{stat.value}</span>
-                </div>
-              ))}
-            </div>
-          </div>
-        )}
-
-        {/* 3D Configurator Tools */}
-        <div className="glass-panel p-5 flex flex-col gap-4 border border-white/10">
-          <div className="flex items-center gap-2 border-b border-white/10 pb-2">
-            <Settings className="w-5 h-5 text-[#ff1801]" />
-            <span className="font-bold text-xs uppercase tracking-widest text-white/70">SF90 Configurator Panel</span>
-          </div>
-
-          {/* 1. Paint Colors */}
-          <div className="flex flex-col gap-1.5">
-            <label className="text-[9px] font-extrabold text-gray-500 uppercase tracking-widest">Livery Palette Color</label>
-            <div className="flex gap-2.5 mt-1">
-              {COLOR_PRESETS.map(preset => (
-                <button
-                  key={preset.name}
-                  className={`color-dot relative flex items-center justify-center ${carColor === preset.value ? 'active' : ''}`}
-                  style={{ backgroundColor: preset.value }}
-                  onClick={() => setCarColor(preset.value)}
-                  title={`${preset.name}: ${preset.desc}`}
-                >
-                  {carColor === preset.value && (
-                    <span className="w-1.5 h-1.5 rounded-full bg-white"></span>
-                  )}
-                </button>
-              ))}
-            </div>
-            <span className="text-[10px] text-[#ff1801] font-semibold italic mt-0.5">
-              {COLOR_PRESETS.find(p => p.value === carColor)?.name || 'Custom'} — {COLOR_PRESETS.find(p => p.value === carColor)?.desc || 'Tuned Color'}
-            </span>
-          </div>
-
-          {/* 2. Rims & Alloys */}
-          <div className="flex flex-col gap-1.5">
-            <label className="text-[9px] font-extrabold text-gray-500 uppercase tracking-widest">Wheel Alloy Design</label>
-            <div className="flex gap-2 mt-1">
-              {[
-                { id: 'black', label: 'Matte Black' },
-                { id: 'chrome', label: 'Polished Chrome' },
-                { id: 'accent', label: 'Livery Match' }
-              ].map(rim => (
-                <button
-                  key={rim.id}
-                  className={`visualizer-btn py-1 px-2.5 rounded-md ${rimsColor === rim.id ? 'active' : ''}`}
-                  onClick={() => setRimsColor(rim.id as any)}
-                >
-                  {rim.label}
-                </button>
-              ))}
-            </div>
-          </div>
-
-          {/* 3. Tire Compounds */}
-          <div className="flex flex-col gap-1.5">
-            <label className="text-[9px] font-extrabold text-gray-500 uppercase tracking-widest">Pirelli Compound Specs</label>
-            <div className="flex flex-wrap gap-2 mt-1">
-              {[
-                { id: 'soft', label: '🔴 Soft' },
-                { id: 'medium', label: '🟡 Medium' },
-                { id: 'hard', label: '⚪ Hard' },
-                { id: 'intermediate', label: '🟢 Inter' },
-                { id: 'wet', label: '🔵 Wet' }
-              ].map(comp => (
-                <button
-                  key={comp.id}
-                  className={`visualizer-btn py-1 px-2 rounded-md ${tireCompound === comp.id ? 'active' : ''}`}
-                  onClick={() => setTireCompound(comp.id as any)}
-                >
-                  {comp.label}
-                </button>
-              ))}
-            </div>
-          </div>
-
-          {/* 4. DRAG REDUCTION SYSTEM (DRS) */}
-          <div className="flex items-center justify-between border-t border-white/5 pt-3">
-            <div className="flex flex-col">
-              <span className="text-[9px] font-extrabold text-gray-400 uppercase tracking-widest">DRS Rear Wing Flap</span>
-              <span className="text-[10px] text-gray-500 italic mt-0.5">Hydraulic wing override</span>
-            </div>
-            <button
-              className={`px-3 py-1.5 rounded-lg text-xs uppercase tracking-widest font-black border transition-all ${
-                drsActive 
-                  ? 'bg-[#ff1801] border-[#ff1801] text-black shadow-[0_0_12px_var(--f1-red-glow)]' 
-                  : 'bg-white/5 border-white/5 text-gray-400 hover:bg-white/10'
-              }`}
-              onClick={() => setDrsActive(!drsActive)}
+        {/* Speed & RPM Stats */}
+        <div className="col-span-8 flex flex-col gap-1 pl-2">
+          <div className="flex items-baseline justify-between">
+            <span 
+              className="font-extrabold text-text-primary font-mono-numbers leading-none"
+              style={{ fontSize: 'clamp(1.5rem, 5vw, 2rem)' }}
             >
-              {drsActive ? 'DRS: Open' : 'DRS: Closed'}
+              {telemetry.speed}
+            </span>
+            <span className="text-[10px] font-black text-[#ff1801] uppercase tracking-widest ml-1">KM/H</span>
+          </div>
+          <div className="flex items-baseline justify-between border-t border-border pt-1.5">
+            <span className="text-[9px] uppercase tracking-widest text-text-secondary font-bold">Lap Time</span>
+            <span className="text-sm font-bold text-text-primary font-mono-numbers">{telemetry.lapTime}</span>
+          </div>
+        </div>
+      </div>
+
+      {/* Throttle & Brake visualizer bars */}
+      <div className="flex flex-col gap-2 border-t border-border pt-3">
+        <div className="grid grid-cols-12 gap-2 items-center text-[9px] font-bold uppercase tracking-wider text-text-secondary">
+          <span className="col-span-3 text-emerald-400 flex items-center gap-0.5">
+            <Zap className="w-3 h-3" />
+            THR
+          </span>
+          <div className="col-span-7 h-1.5 bg-bg-primary border border-border rounded-full overflow-hidden">
+            <div className="h-full bg-emerald-500 rounded-full" style={{ width: `${telemetry.throttle}%` }}></div>
+          </div>
+          <span className="col-span-2 text-right font-mono-numbers text-text-primary">{telemetry.throttle}%</span>
+        </div>
+
+        <div className="grid grid-cols-12 gap-2 items-center text-[9px] font-bold uppercase tracking-wider text-text-secondary">
+          <span className="col-span-3 text-red-500 flex items-center gap-0.5">
+            <ShieldAlert className="w-3 h-3" />
+            BRK
+          </span>
+          <div className="col-span-7 h-1.5 bg-bg-primary border border-border rounded-full overflow-hidden">
+            <div className="h-full bg-red-600 rounded-full" style={{ width: `${telemetry.brake}%` }}></div>
+          </div>
+          <span className="col-span-2 text-right font-mono-numbers text-text-primary">{telemetry.brake}%</span>
+        </div>
+      </div>
+
+      {/* G-Force crosshair & Lateral Force Feed */}
+      <div className="grid grid-cols-12 gap-3 border-t border-border pt-3 items-center">
+        {/* G-Force Crosshair bubble chart */}
+        <div className="col-span-4 flex items-center justify-center">
+          <div className="w-16 h-16 rounded-full border border-border relative bg-bg-primary flex items-center justify-center">
+            {/* Axes */}
+            <div className="absolute top-0 bottom-0 left-1/2 w-px bg-border"></div>
+            <div className="absolute left-0 right-0 top-1/2 h-px bg-border"></div>
+            <div className="w-8 h-8 rounded-full border border-border absolute"></div>
+            
+            {/* G-Force bubble indicator */}
+            <span 
+              className="absolute w-2.5 h-2.5 rounded-full bg-[#ff1801] shadow-[0_0_8px_#ff1801] transition-all duration-75"
+              style={{ transform: `translate(${gX}px, ${gY}px)` }}
+            ></span>
+          </div>
+        </div>
+
+        <div className="col-span-8 flex flex-col gap-1 pl-2 text-left">
+          <span className="text-[9px] font-bold text-text-secondary uppercase tracking-widest">Lateral G-Force</span>
+          <span className="text-base font-extrabold text-text-primary font-mono-numbers">
+            {telemetry.gForce} <span className="text-xs text-[#ff1801]">G</span>
+          </span>
+          <span className="text-[8px] text-text-secondary italic">SF90 Peak decel: 5.8G</span>
+        </div>
+      </div>
+    </div>
+  );
+
+  // Render Configurator Module
+  const renderConfigurator = () => (
+    <div className="glass-panel border border-border p-6 flex flex-col gap-5 bg-white/70 dark:bg-black/70 shadow-sm backdrop-blur-md">
+      <div className="flex items-center gap-2 border-b border-border pb-2">
+        <Settings className="w-4 h-4 text-[#ff1801]" />
+        <span className="font-extrabold text-xs uppercase tracking-widest text-text-primary">Configurator Panel</span>
+      </div>
+
+      {/* 1. Paint Colors */}
+      <div className="flex flex-col gap-1.5">
+        <label className="text-[9px] font-extrabold text-text-secondary uppercase tracking-widest">Livery Color</label>
+        <div className="flex gap-2.5 mt-1">
+          {COLOR_PRESETS.map(preset => (
+            <button
+              key={preset.name}
+              className={`w-8 h-8 rounded-full relative flex items-center justify-center transition-all border border-border hover:scale-105 active:scale-95 ${
+                carColor === preset.value ? 'ring-2 ring-[#ff1801] ring-offset-2 dark:ring-offset-black scale-105 shadow-sm' : ''
+              }`}
+              style={{ backgroundColor: preset.value }}
+              onClick={() => setCarColor(preset.value)}
+              title={`${preset.name}: ${preset.desc}`}
+            >
+              {carColor === preset.value && (
+                <span className="w-2 h-2 rounded-full bg-white shadow-sm"></span>
+              )}
+            </button>
+          ))}
+        </div>
+        <span className="text-[10px] text-[#ff1801] font-semibold italic mt-0.5">
+          {COLOR_PRESETS.find(p => p.value === carColor)?.name || 'Custom'} — {COLOR_PRESETS.find(p => p.value === carColor)?.desc || 'Tuned Color'}
+        </span>
+      </div>
+
+      {/* 2. Rims & Alloys */}
+      <div className="flex flex-col gap-1.5">
+        <label className="text-[9px] font-extrabold text-text-secondary uppercase tracking-widest">Wheel Alloy Design</label>
+        <div className="bg-bg-primary border border-border p-1 rounded-full flex gap-1 w-full">
+          {[
+            { id: 'black', label: 'Matte Black' },
+            { id: 'chrome', label: 'Chrome' },
+            { id: 'accent', label: 'Livery Match' }
+          ].map(rim => (
+            <button
+              key={rim.id}
+              className={`flex-1 text-center py-2 text-xs font-semibold rounded-full transition-all duration-200 ${
+                rimsColor === rim.id 
+                  ? 'bg-[#ff1801] text-white shadow-sm font-bold' 
+                  : 'text-text-secondary hover:text-text-primary'
+              }`}
+              onClick={() => setRimsColor(rim.id as any)}
+            >
+              {rim.label}
+            </button>
+          ))}
+        </div>
+      </div>
+
+      {/* 3. Tire Compounds */}
+      <div className="flex flex-col gap-1.5">
+        <label className="text-[9px] font-extrabold text-text-secondary uppercase tracking-widest">Pirelli Compound Specs</label>
+        <div className="bg-bg-primary border border-border p-1 rounded-2xl flex flex-wrap gap-1 w-full">
+          {[
+            { id: 'soft', label: '🔴 Soft' },
+            { id: 'medium', label: '🟡 Med' },
+            { id: 'hard', label: '⚪ Hard' },
+            { id: 'intermediate', label: '🟢 Inter' },
+            { id: 'wet', label: '🔵 Wet' }
+          ].map(comp => (
+            <button
+              key={comp.id}
+              className={`flex-1 text-center py-2 px-1 text-xs font-semibold rounded-xl transition-all duration-200 min-w-[55px] ${
+                tireCompound === comp.id 
+                  ? 'bg-[#ff1801] text-white shadow-sm font-bold' 
+                  : 'text-text-secondary hover:text-text-primary'
+              }`}
+              onClick={() => setTireCompound(comp.id as any)}
+            >
+              {comp.label}
+            </button>
+          ))}
+        </div>
+      </div>
+
+      {/* 4. DRAG REDUCTION SYSTEM (DRS) */}
+      <div className="flex items-center justify-between border-t border-border pt-3">
+        <div className="flex flex-col">
+          <span className="text-[9px] font-extrabold text-text-secondary uppercase tracking-widest">DRS Rear Wing Flap</span>
+          <span className="text-[10px] text-text-secondary italic mt-0.5">Hydraulic wing override</span>
+        </div>
+        <button
+          className={`px-4 py-2 rounded-full text-xs uppercase tracking-widest font-black border transition-all ${
+            drsActive 
+              ? 'bg-[#ff1801] border-[#ff1801] text-white shadow-sm' 
+              : 'bg-bg-primary border-border text-text-secondary hover:text-text-primary'
+          }`}
+          onClick={() => setDrsActive(!drsActive)}
+        >
+          {drsActive ? 'DRS: Open' : 'DRS: Closed'}
+        </button>
+      </div>
+
+      {/* 5. Ride Height Slider */}
+      <div className="flex flex-col gap-1 border-t border-border pt-3">
+        <div className="flex justify-between items-center text-[9px] font-extrabold text-text-secondary uppercase tracking-widest">
+          <span>Suspension Ride Height</span>
+          <span className="font-mono-numbers text-text-primary">{rideHeight > 0 ? `+${(rideHeight * 1000).toFixed(0)}` : (rideHeight * 1000).toFixed(0)} mm</span>
+        </div>
+        <input 
+          type="range" 
+          min="-0.03" 
+          max="0.03" 
+          step="0.005"
+          value={rideHeight}
+          onChange={(e) => setRideHeight(parseFloat(e.target.value))}
+          className="w-full accent-[#ff1801] bg-bg-primary h-2 rounded-full cursor-pointer border border-border"
+        />
+      </div>
+
+      {/* 6. Steering Angle Slider */}
+      <div className="flex flex-col gap-1 border-t border-border pt-3">
+        <div className="flex justify-between items-center text-[9px] font-extrabold text-text-secondary uppercase tracking-widest">
+          <span>Front Wheel Steering</span>
+          <span className="font-mono-numbers text-text-primary">{steeringAngle > 0 ? `+${steeringAngle}` : steeringAngle}°</span>
+        </div>
+        <input 
+          type="range" 
+          min="-25" 
+          max="25" 
+          step="2"
+          value={steeringAngle}
+          onChange={(e) => setSteeringAngle(parseInt(e.target.value))}
+          className="w-full accent-[#ff1801] bg-bg-primary h-2 rounded-full cursor-pointer border border-border"
+        />
+      </div>
+    </div>
+  );
+
+  return (
+    <>
+      {/* Desktop Dashboard Grid (Screens >= 768px) */}
+      {!isMobile && (
+        <div className="grid grid-cols-12 gap-6 w-full h-full flex-1 items-end pointer-events-none mt-10">
+          {/* Left Column: Live Telemetry */}
+          <div className="col-span-12 md:col-span-4 self-end pointer-events-auto mb-4 animate-slide-up">
+            {renderTelemetry()}
+          </div>
+
+          {/* Center Spacer: Empty to let 3D model shine */}
+          <div className="hidden md:block md:col-span-4 h-1 pointer-events-none"></div>
+
+          {/* Right Column: Configurator Panel */}
+          <div className="col-span-12 md:col-span-4 self-end pointer-events-auto flex flex-col gap-4 mb-4 animate-slide-up">
+            {/* Component focused card */}
+            {selectedPart && activePartInfo && (
+              <div className="glass-panel p-5 border border-border flex flex-col gap-3 relative overflow-hidden bg-white/70 dark:bg-black/70 shadow-sm backdrop-blur-md">
+                <div className="absolute top-0 right-0 p-3 z-10">
+                  <button 
+                    onClick={() => setSelectedPart(null)}
+                    className="text-text-secondary hover:text-text-primary font-bold text-[9px] bg-bg-primary border border-border px-2 py-0.5 rounded-md uppercase tracking-wider transition-all"
+                  >
+                    Deselect
+                  </button>
+                </div>
+
+                <div className="flex flex-col font-sans">
+                  <span className="text-[9px] font-extrabold text-[#ff1801] uppercase tracking-widest">Active Component Focus</span>
+                  <h4 className="text-sm font-bold text-text-primary uppercase tracking-tight mt-0.5">{activePartInfo.title}</h4>
+                  <span className="text-[10px] font-semibold text-text-secondary italic mt-0.5">{activePartInfo.subtitle}</span>
+                </div>
+
+                <p className="text-xs text-text-secondary leading-relaxed border-t border-border pt-2 text-justify">
+                  {activePartInfo.description}
+                </p>
+
+                <div className="flex flex-col gap-1.5 mt-1 bg-bg-primary p-2.5 rounded-xl border border-border font-semibold text-xs text-text-primary">
+                  {activePartInfo.stats.map(stat => (
+                    <div key={stat.label} className="flex justify-between items-center">
+                      <span className="text-text-secondary">{stat.label}</span>
+                      <span className="font-mono-numbers">{stat.value}</span>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
+
+            {renderConfigurator()}
+          </div>
+        </div>
+      )}
+
+      {/* Mobile Floating Action Controls Trigger (Screens < 768px) */}
+      {isMobile && (
+        <>
+          {/* Active Car Component hotspot card floating at the top of the canvas */}
+          {selectedPart && activePartInfo && (
+            <div className="fixed top-28 left-4 right-4 z-40 bg-white/95 dark:bg-black/95 border border-border p-4 rounded-2xl shadow-lg backdrop-blur-md pointer-events-auto flex flex-col gap-2">
+              <div className="flex justify-between items-start">
+                <div className="flex flex-col">
+                  <span className="text-[9px] font-extrabold text-[#ff1801] uppercase tracking-widest">Component Focus</span>
+                  <h4 className="text-sm font-bold text-text-primary uppercase tracking-tight mt-0.5">{activePartInfo.title}</h4>
+                </div>
+                <button 
+                  onClick={() => setSelectedPart(null)}
+                  className="p-1 hover:bg-bg-primary border border-border rounded-full transition-all"
+                  aria-label="Dismiss component details"
+                >
+                  <X className="w-3.5 h-3.5 text-text-secondary" />
+                </button>
+              </div>
+              <p className="text-xs text-text-secondary leading-relaxed border-t border-border pt-2 text-justify">
+                {activePartInfo.description}
+              </p>
+            </div>
+          )}
+
+          {/* Floating Pill Buttons */}
+          <div className="fixed bottom-6 left-1/2 transform -translate-x-1/2 flex gap-3 z-40 pointer-events-auto select-none animate-slide-up">
+            <button
+              onClick={() => setMobilePanel(mobilePanel === 'telemetry' ? 'none' : 'telemetry')}
+              className={`flex items-center gap-2 px-5 py-3 rounded-full text-xs uppercase tracking-widest font-black border transition-all ${
+                mobilePanel === 'telemetry'
+                  ? 'bg-[#ff1801] border-[#ff1801] text-white shadow-lg'
+                  : 'bg-white/95 dark:bg-black/95 text-text-primary border-border shadow-md backdrop-blur-md hover:bg-bg-primary'
+              }`}
+            >
+              <Gauge className="w-4 h-4 animate-pulse" />
+              <span>Telemetry</span>
+            </button>
+            <button
+              onClick={() => setMobilePanel(mobilePanel === 'configurator' ? 'none' : 'configurator')}
+              className={`flex items-center gap-2 px-5 py-3 rounded-full text-xs uppercase tracking-widest font-black border transition-all ${
+                mobilePanel === 'configurator'
+                  ? 'bg-[#ff1801] border-[#ff1801] text-white shadow-lg'
+                  : 'bg-white/95 dark:bg-black/95 text-text-primary border-border shadow-md backdrop-blur-md hover:bg-bg-primary'
+              }`}
+            >
+              <Settings className="w-4 h-4" />
+              <span>Configure</span>
             </button>
           </div>
 
-          {/* 5. NEW: Ride Height Slider */}
-          <div className="flex flex-col gap-1 border-t border-white/5 pt-3">
-            <div className="flex justify-between items-center text-[9px] font-extrabold text-gray-400 uppercase tracking-widest">
-              <span>Suspension Ride Height</span>
-              <span className="font-mono-numbers text-white">{rideHeight > 0 ? `+${(rideHeight * 1000).toFixed(0)}` : (rideHeight * 1000).toFixed(0)} mm</span>
-            </div>
-            <input 
-              type="range" 
-              min="-0.03" 
-              max="0.03" 
-              step="0.005"
-              value={rideHeight}
-              onChange={(e) => setRideHeight(parseFloat(e.target.value))}
-              className="w-full accent-[#ff1801] bg-black/40 h-1.5 rounded-lg cursor-pointer border border-white/5"
-            />
-          </div>
+          {/* Mobile Telemetry Drawer */}
+          <AnimatePresence>
+            {mobilePanel === 'telemetry' && (
+              <motion.div
+                initial={{ y: '100%' }}
+                animate={{ y: 0 }}
+                exit={{ y: '100%' }}
+                transition={{ type: 'spring', damping: 25, stiffness: 220 }}
+                className="fixed bottom-0 left-0 right-0 z-40 bg-white/95 dark:bg-[#000000]/95 border-t border-border rounded-t-3xl p-5 pb-20 shadow-2xl backdrop-blur-2xl max-h-[75dvh] overflow-y-auto pointer-events-auto"
+              >
+                <div className="w-12 h-1 bg-border rounded-full mx-auto mb-4 cursor-pointer" onClick={() => setMobilePanel('none')}></div>
+                <div className="flex justify-between items-center mb-3">
+                  <span className="font-extrabold text-sm uppercase tracking-widest text-[#ff1801]">Telemetry Link</span>
+                  <button onClick={() => setMobilePanel('none')} className="p-1 bg-bg-primary border border-border rounded-full transition-all">
+                    <X className="w-4 h-4 text-text-secondary" />
+                  </button>
+                </div>
+                {renderTelemetry()}
+              </motion.div>
+            )}
+          </AnimatePresence>
 
-          {/* 6. NEW: Steering Angle Slider */}
-          <div className="flex flex-col gap-1 border-t border-white/5 pt-3">
-            <div className="flex justify-between items-center text-[9px] font-extrabold text-gray-400 uppercase tracking-widest">
-              <span>Front Wheel Steering</span>
-              <span className="font-mono-numbers text-white">{steeringAngle > 0 ? `+${steeringAngle}` : steeringAngle}°</span>
-            </div>
-            <input 
-              type="range" 
-              min="-25" 
-              max="25" 
-              step="2"
-              value={steeringAngle}
-              onChange={(e) => setSteeringAngle(parseInt(e.target.value))}
-              className="w-full accent-[#ff1801] bg-black/40 h-1.5 rounded-lg cursor-pointer border border-white/5"
-            />
-          </div>
-
-        </div>
-
-      </div>
+          {/* Mobile Configurator Drawer */}
+          <AnimatePresence>
+            {mobilePanel === 'configurator' && (
+              <motion.div
+                initial={{ y: '100%' }}
+                animate={{ y: 0 }}
+                exit={{ y: '100%' }}
+                transition={{ type: 'spring', damping: 25, stiffness: 220 }}
+                className="fixed bottom-0 left-0 right-0 z-40 bg-white/95 dark:bg-[#000000]/95 border-t border-border rounded-t-3xl p-5 pb-20 shadow-2xl backdrop-blur-2xl max-h-[80dvh] overflow-y-auto pointer-events-auto"
+              >
+                <div className="w-12 h-1 bg-border rounded-full mx-auto mb-4 cursor-pointer" onClick={() => setMobilePanel('none')}></div>
+                <div className="flex justify-between items-center mb-3">
+                  <span className="font-extrabold text-sm uppercase tracking-widest text-[#ff1801]">SF90 Control Panel</span>
+                  <button onClick={() => setMobilePanel('none')} className="p-1 bg-bg-primary border border-border rounded-full transition-all">
+                    <X className="w-4 h-4 text-text-secondary" />
+                  </button>
+                </div>
+                {renderConfigurator()}
+              </motion.div>
+            )}
+          </AnimatePresence>
+        </>
       )}
-
-    </div>
+    </>
   );
 }

@@ -9,6 +9,7 @@ import * as THREE from 'three';
 import { F1CarModel } from './F1CarModel';
 import { PostProcessing } from './PostProcessing';
 import { useMediaQuery } from '../hooks/useMediaQuery';
+import { useTheme } from '../hooks/useTheme';
 
 interface F1SceneProps {
   color: string;
@@ -235,9 +236,10 @@ export function F1Scene({
 }: F1SceneProps) {
   const controlsRef = useRef<any>(null);
   const isMobile = useMediaQuery('(max-width: 768px)');
+  const { theme } = useTheme();
 
   return (
-    <div className="canvas-wrapper relative w-full h-full bg-[#060608]" style={{ touchAction: 'none' }}>
+    <div className="canvas-wrapper relative w-full h-full bg-bg-primary" style={{ touchAction: 'none' }}>
       <Canvas
         shadows={!isMobile}
         dpr={[1, isMobile ? 1.5 : 2]}
@@ -257,13 +259,13 @@ export function F1Scene({
           if (e.target === e.currentTarget) onSelectPart(null);
         }}
       >
-        <color attach="background" args={['#060608']} />
+        <color attach="background" args={[theme === 'dark' ? '#000000' : '#f5f5f7']} />
         
         {/* Environment setup for reflection maps */}
         <Environment preset="night" background={false} />
 
         {/* Ambient base */}
-        <ambientLight intensity={0.2} color="#151722" />
+        <ambientLight intensity={theme === 'dark' ? 0.2 : 0.45} color={theme === 'dark' ? '#151722' : '#ffffff'} />
 
         {/* Key light - aggressive racing studio spot */}
         <directionalLight
@@ -280,10 +282,10 @@ export function F1Scene({
         />
 
         {/* Dynamic neon highlights - red side light */}
-        <directionalLight position={[-6, 2, 2]} intensity={1.8} color="#ff1801" />
+        <directionalLight position={[-6, 2, 2]} intensity={theme === 'dark' ? 1.8 : 0.9} color="#ff1801" />
 
         {/* Dynamic neon highlights - electric blue side light */}
-        <directionalLight position={[6, 2, -2]} intensity={1.2} color="#0055ff" />
+        <directionalLight position={[6, 2, -2]} intensity={theme === 'dark' ? 1.2 : 0.6} color="#0055ff" />
 
         {/* Spotlights mapping the tires and engine */}
         <spotLight
@@ -320,7 +322,7 @@ export function F1Scene({
         {/* ── Wide dark floor beyond the track ── */}
         <mesh rotation={[-Math.PI / 2, 0, 0]} position={[0, -0.16, 0]} receiveShadow>
           <planeGeometry args={[40, 40]} />
-          <meshStandardMaterial color="#060608" roughness={0.92 /* very matte */} metalness={0.03} />
+          <meshStandardMaterial color={theme === 'dark' ? '#000000' : '#f5f5f7'} roughness={0.92 /* very matte */} metalness={0.03} />
         </mesh>
 
         {/* ── Speed streak lines ── */}
