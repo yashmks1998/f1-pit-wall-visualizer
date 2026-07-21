@@ -5,31 +5,53 @@
 @tailwind utilities;
 
 :root {
-  --font-display: 'Outfit', sans-serif;
-  --font-sans: 'Inter', sans-serif;
-
-  /* Formula 1 Premium Dark Carbon & Neon Theme */
-  --f1-red: #ff1801;
-  --f1-red-glow: rgba(255, 24, 1, 0.35);
-  --f1-black: #060608;
-  --f1-card-bg: rgba(15, 15, 22, 0.65); /* Translucent dark */
-  --f1-card-hover: rgba(22, 22, 32, 0.85);
-  --f1-border: rgba(255, 255, 255, 0.08);
-  --f1-border-hover: rgba(255, 255, 255, 0.16);
+  /* Light Mode (Default Apple Style) */
+  --bg-primary: #f5f5f7;
+  --bg-secondary: #ffffff;
+  --text-primary: #1d1d1f;
+  --text-secondary: #86868b;
+  --text-muted: #a1a1a6;
+  --accent: #ff1801;
+  --border: rgba(0, 0, 0, 0.08);
+  --border-hover: rgba(0, 0, 0, 0.16);
+  --surface-elevated: rgba(255, 255, 255, 0.8);
   
-  /* Text colors */
-  --text-primary: #f8fafc;
-  --text-secondary: #94a3b8; /* soft gray for secondary text */
-  --text-muted: #475569;
+  --f1-red: #ff1801;
+  --f1-red-glow: rgba(255, 24, 1, 0.12);
+  --f1-black: #060608;
+  --f1-card-bg: rgba(255, 255, 255, 0.7);
+  --f1-card-hover: rgba(255, 255, 255, 0.85);
+
+  --font-display: -apple-system, BlinkMacSystemFont, "SF Pro Display", "SF Pro Text", "Inter", sans-serif;
+  --font-sans: -apple-system, BlinkMacSystemFont, "SF Pro Text", "Inter", sans-serif;
 
   /* Layout and transition */
-  --transition-fast: 0.15s cubic-bezier(0.4, 0, 0.2, 1);
-  --transition-normal: 0.25s cubic-bezier(0.4, 0, 0.2, 1);
-  --transition-slow: 0.45s cubic-bezier(0.4, 0, 0.2, 1);
+  --transition-fast: 0.15s cubic-bezier(0.16, 1, 0.3, 1);
+  --transition-normal: 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+  --transition-slow: 0.45s cubic-bezier(0.16, 1, 0.3, 1);
   
-  --shadow-sm: 0 2px 10px rgba(0, 0, 0, 0.5);
-  --shadow-md: 0 10px 35px rgba(0, 0, 0, 0.7);
-  --shadow-lg: 0 20px 50px rgba(0, 0, 0, 0.85);
+  --shadow-sm: 0 2px 8px rgba(0, 0, 0, 0.04);
+  --shadow-md: 0 8px 24px rgba(0, 0, 0, 0.06);
+  --shadow-lg: 0 16px 40px rgba(0, 0, 0, 0.1);
+}
+
+.dark {
+  /* Dark Mode (Apple Dark Style) */
+  --bg-primary: #000000;
+  --bg-secondary: #0a0a0a;
+  --text-primary: #f5f5f7;
+  --text-secondary: #86868b;
+  --text-muted: #48484a;
+  --border: rgba(255, 255, 255, 0.08);
+  --border-hover: rgba(255, 255, 255, 0.16);
+  --surface-elevated: rgba(22, 22, 26, 0.85);
+  --f1-red-glow: rgba(255, 24, 1, 0.35);
+  --f1-card-bg: rgba(15, 15, 22, 0.65);
+  --f1-card-hover: rgba(22, 22, 32, 0.85);
+  
+  --shadow-sm: 0 2px 8px rgba(0, 0, 0, 0.3);
+  --shadow-md: 0 8px 30px rgba(0, 0, 0, 0.6);
+  --shadow-lg: 0 16px 50px rgba(0, 0, 0, 0.8);
 }
 
 * {
@@ -41,21 +63,18 @@
 }
 
 body {
-  background-color: var(--f1-black);
+  background-color: var(--bg-primary);
   color: var(--text-primary);
   font-family: var(--font-sans);
-  min-height: 100vh;
+  min-height: 100dvh;
   overflow-x: hidden;
   position: relative;
-  /* Dark carbon fiber pattern with red/blue ambient lighting */
+  transition: background-color var(--transition-normal), color var(--transition-normal);
+  /* Premium radial gradients instead of heavy carbon fiber textures */
   background-image: 
-    linear-gradient(45deg, rgba(255, 255, 255, 0.003) 25%, transparent 25%), 
-    linear-gradient(-45deg, rgba(255, 255, 255, 0.003) 25%, transparent 25%), 
-    linear-gradient(45deg, transparent 75%, rgba(255, 255, 255, 0.003) 75%), 
-    linear-gradient(-45deg, transparent 75%, rgba(255, 255, 255, 0.003) 75%),
-    radial-gradient(at 0% 0%, rgba(255, 24, 1, 0.08) 0px, transparent 50%),
-    radial-gradient(at 100% 100%, rgba(30, 65, 255, 0.06) 0px, transparent 50%);
-  background-size: 8px 8px, 8px 8px, 8px 8px, 8px 8px, 100% 100%, 100% 100%;
+    radial-gradient(at 0% 0%, rgba(255, 24, 1, 0.04) 0px, transparent 50%),
+    radial-gradient(at 100% 100%, rgba(30, 65, 255, 0.03) 0px, transparent 50%);
+  background-size: 100% 100%, 100% 100%;
   background-attachment: fixed;
 }
 

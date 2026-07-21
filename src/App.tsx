@@ -6,8 +6,11 @@ import {
   Calendar as CalendarIcon, 
   Trophy, 
   Users, 
-  ShieldAlert
+  ShieldAlert,
+  Sun,
+  Moon
 } from 'lucide-react';
+import { useTheme } from './hooks/useTheme';
 import './App.css';
 import { useMediaQuery } from './hooks/useMediaQuery';
 
@@ -32,6 +35,7 @@ import { CONSTRUCTOR_COLORS, PART_DETAILS } from './utils/f1Constants';
 
 function App() {
   const isMobile = useMediaQuery('(max-width: 768px)');
+  const { theme, toggleTheme } = useTheme();
   // Navigation
   const [activeTab, setActiveTab] = useState<'dashboard' | 'standings' | 'calendar' | 'results' | 'drivers'>('dashboard');
   const [loading, setLoading] = useState(true);
@@ -89,6 +93,19 @@ function App() {
       setMobilePanel('configurator');
     }
   }, [selectedPart]);
+
+  // Mobile navigation drawer state & body scroll lock
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  useEffect(() => {
+    if (mobileMenuOpen && isMobile) {
+      document.body.style.overflow = 'hidden';
+    } else {
+      document.body.style.overflow = '';
+    }
+    return () => {
+      document.body.style.overflow = '';
+    };
+  }, [mobileMenuOpen, isMobile]);
 
   // Fetch F1 Data
   useEffect(() => {
@@ -303,13 +320,13 @@ function App() {
   const activePartInfo = selectedPart ? PART_DETAILS[selectedPart] : null;
 
   return (
-    <div className={`app-container bg-[#060608] text-white flex flex-col relative w-full min-h-screen ${
+    <div className={`app-container bg-[#060608] text-white flex flex-col relative w-full min-h-dvh ${
       (activeTab === 'dashboard' && !isMobile) ? 'overflow-hidden' : 'overflow-y-auto'
     }`}>
       
       {/* 3D Scene Wrapper - Absolute Background */}
       <div className={`${
-        isMobile && activeTab === 'dashboard' ? 'relative w-full h-[40vh] shrink-0 order-2' : 'absolute inset-0 w-full h-full'
+        isMobile && activeTab === 'dashboard' ? 'relative w-full h-[40vh] shrink-0 order-2 mt-16' : 'absolute inset-0 w-full h-full'
       } z-0`}>
         <F1Scene
           color={carColor}
@@ -332,44 +349,158 @@ function App() {
       <div className={isMobile ? 'hidden' : 'absolute inset-0 pointer-events-none z-10 bg-gradient-to-t from-[#060608]/95 via-transparent to-transparent'}></div>
 
       {/* Premium Glassmorphic Header */}
-      <header className="f1-header w-full border-b border-[#ff1801]/60 bg-black/40 backdrop-blur-md z-40 relative px-6 py-4 flex items-center justify-between order-first">
+      <header className="f1-header w-full border-b border-[#ff1801]/60 bg-black/90 backdrop-blur-md z-50 fixed top-0 left-0 px-4 md:px-6 h-16 flex items-center justify-between order-first">
         <div className="header-container max-w-[1600px] mx-auto w-full flex items-center justify-between">
           
           {/* Logo & Brand */}
-          <div className="brand-section flex items-center gap-3 cursor-pointer" onClick={() => { setActiveTab('dashboard'); setSelectedPart(null); }}>
-            <div className="f1-logo text-3xl font-extrabold italic text-[#ff1801] flex items-center tracking-tighter">
+          <div className="brand-section flex items-center gap-3 cursor-pointer" onClick={() => { setActiveTab('dashboard'); setSelectedPart(null); setMobileMenuOpen(false); }}>
+            <div className="f1-logo text-2xl md:text-3xl font-extrabold italic text-[#ff1801] flex items-center tracking-tighter">
               <span className="text-white font-black font-display">SF</span><span className="text-red-500 font-bold">90</span>
-              <span className="text-gray-400 text-xs tracking-normal font-bold pl-3 border-l border-white/10 ml-3 not-italic uppercase font-sans">
+              <span className="text-gray-400 text-xs tracking-normal font-bold pl-3 border-l border-white/10 ml-3 not-italic uppercase font-sans hidden sm:inline-block">
                 Pit-Wall Control
               </span>
             </div>
           </div>
           
+          {/* Desktop Right Nav (Hidden on Mobile) */}
           <div className="flex items-center gap-4">
-            {/* Season Selector */}
-            <select 
-              className="bg-black/60 border border-white/10 text-white text-xs rounded-xl focus:ring-[#ff1801] focus:border-[#ff1801] block w-28 p-2 font-bold cursor-pointer transition-all"
-              value={selectedYear}
-              onChange={(e) => setSelectedYear(e.target.value)}
+            
+            <div className="hidden md:flex items-center gap-4">
+              {/* Season Selector */}
+              <select 
+                className="bg-black/60 border border-white/10 text-white text-xs rounded-xl focus:ring-[#ff1801] focus:border-[#ff1801] block w-28 p-2 font-bold cursor-pointer transition-all"
+                value={selectedYear}
+                onChange={(e) => setSelectedYear(e.target.value)}
+              >
+                <option value="current">Current</option>
+                <option value="2026">2026</option>
+                <option value="2025">2025</option>
+                <option value="2024">2024</option>
+                <option value="2023">2023</option>
+                <option value="2022">2022</option>
+                <option value="2021">2021</option>
+                <option value="2020">2020</option>
+                <option value="2019">2019</option>
+                <option value="2018">2018</option>
+                <option value="2015">2015</option>
+                <option value="2010">2010</option>
+                <option value="2005">2005</option>
+                <option value="2000">2000</option>
+              </select>
+
+              {/* Navigation Tabs */}
+              <nav className="nav-tabs flex gap-2">
+                {[
+                  { id: 'dashboard', label: '3D Configurator', icon: Compass },
+                  { id: 'standings', label: 'Standings', icon: Trophy },
+                  { id: 'calendar', label: 'Calendar', icon: CalendarIcon },
+                  { id: 'results', label: 'Last Results', icon: Flag },
+                  { id: 'drivers', label: 'Drivers', icon: Users }
+                ].map(tab => {
+                  const Icon = tab.icon;
+                  const isActive = activeTab === tab.id;
+                  return (
+                    <button 
+                      key={tab.id}
+                      className={`flex items-center gap-2 px-4 py-2 text-xs uppercase tracking-wider font-extrabold rounded-xl transition-all ${
+                        isActive 
+                          ? 'bg-[#ff1801]/15 text-white border border-[#ff1801]/30 shadow-[0_0_12px_var(--f1-red-glow)]' 
+                          : 'text-gray-400 hover:text-white hover:bg-white/5'
+                      }`}
+                      onClick={() => {
+                        setActiveTab(tab.id as any);
+                        if (tab.id !== 'dashboard') {
+                          setSelectedPart(null);
+                        }
+                      }}
+                    >
+                      <Icon className="w-3.5 h-3.5" />
+                      <span>{tab.label}</span>
+                    </button>
+                  );
+                })}
+              </nav>
+            </div>
+
+            {/* Theme Toggle Button */}
+            <button 
+              onClick={toggleTheme}
+              className="w-11 h-11 flex items-center justify-center bg-white/5 border border-white/10 hover:bg-white/10 text-gray-300 hover:text-white rounded-xl transition-all pointer-events-auto shadow-sm"
+              aria-label="Toggle dark/light theme"
             >
-              <option value="current">Current</option>
-              <option value="2026">2026</option>
-              <option value="2025">2025</option>
-              <option value="2024">2024</option>
-              <option value="2023">2023</option>
-              <option value="2022">2022</option>
-              <option value="2021">2021</option>
-              <option value="2020">2020</option>
-              <option value="2019">2019</option>
-              <option value="2018">2018</option>
-              <option value="2015">2015</option>
-              <option value="2010">2010</option>
-              <option value="2005">2005</option>
-              <option value="2000">2000</option>
-            </select>
+              <motion.div
+                key={theme}
+                initial={{ scale: 0.6, rotate: -45, opacity: 0 }}
+                animate={{ scale: 1, rotate: 0, opacity: 1 }}
+                transition={{ duration: 0.2 }}
+              >
+                {theme === 'dark' ? (
+                  <Sun className="w-5 h-5 text-yellow-400" />
+                ) : (
+                  <Moon className="w-5 h-5 text-indigo-600" />
+                )}
+              </motion.div>
+            </button>
+
+            {/* Mobile Hamburger Toggle Button */}
+            <button 
+              onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
+              className="flex items-center justify-center w-11 h-11 bg-white/5 hover:bg-white/10 active:bg-white/20 border border-white/10 rounded-xl pointer-events-auto transition-all md:hidden z-50 shadow-sm"
+              aria-label="Toggle navigation menu"
+            >
+              <div className="w-6 h-5 flex flex-col justify-between items-center relative">
+                <span className={`w-6 h-0.5 bg-white rounded-full transition-all duration-300 origin-left ${mobileMenuOpen ? 'rotate-45 translate-x-1 translate-y-px' : ''}`}></span>
+                <span className={`w-6 h-0.5 bg-white rounded-full transition-all duration-300 ${mobileMenuOpen ? 'opacity-0' : ''}`}></span>
+                <span className={`w-6 h-0.5 bg-white rounded-full transition-all duration-300 origin-left ${mobileMenuOpen ? '-rotate-45 translate-x-1 -translate-y-px' : ''}`}></span>
+              </div>
+            </button>
+
+          </div>
+
+        </div>
+      </header>
+
+      {/* Mobile Hamburger Dropdown Panel */}
+      <AnimatePresence>
+        {mobileMenuOpen && isMobile && (
+          <motion.div 
+            initial={{ opacity: 0, y: -20 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: -20 }}
+            transition={{ duration: 0.2 }}
+            className="fixed top-16 left-0 right-0 z-50 bg-[#0d0d14]/95 border-b border-[#ff1801]/30 backdrop-blur-lg px-6 py-6 flex flex-col gap-5 shadow-[0_15px_30px_rgba(0,0,0,0.8)] pointer-events-auto md:hidden"
+          >
+            {/* Season Selector */}
+            <div className="flex flex-col gap-2">
+              <label className="text-[10px] font-black text-gray-500 uppercase tracking-widest">Championship Season</label>
+              <select 
+                className="bg-black/60 border border-white/10 text-white text-sm rounded-xl focus:ring-[#ff1801] focus:border-[#ff1801] block w-full p-2.5 font-bold cursor-pointer transition-all"
+                value={selectedYear}
+                onChange={(e) => {
+                  setSelectedYear(e.target.value);
+                  setMobileMenuOpen(false);
+                }}
+              >
+                <option value="current">Current</option>
+                <option value="2026">2026</option>
+                <option value="2025">2025</option>
+                <option value="2024">2024</option>
+                <option value="2023">2023</option>
+                <option value="2022">2022</option>
+                <option value="2021">2021</option>
+                <option value="2020">2020</option>
+                <option value="2019">2019</option>
+                <option value="2018">2018</option>
+                <option value="2015">2015</option>
+                <option value="2010">2010</option>
+                <option value="2005">2005</option>
+                <option value="2000">2000</option>
+              </select>
+            </div>
 
             {/* Navigation Tabs */}
-            <nav className="nav-tabs flex gap-2">
+            <div className="flex flex-col gap-2">
+              <label className="text-[10px] font-black text-gray-500 uppercase tracking-widest border-t border-white/5 pt-3">Navigation</label>
               {[
                 { id: 'dashboard', label: '3D Configurator', icon: Compass },
                 { id: 'standings', label: 'Standings', icon: Trophy },
@@ -382,28 +513,28 @@ function App() {
                 return (
                   <button 
                     key={tab.id}
-                    className={`flex items-center gap-2 px-4 py-2 text-xs uppercase tracking-wider font-extrabold rounded-xl transition-all ${
+                    className={`flex items-center gap-3 w-full px-4 py-3 text-xs uppercase tracking-wider font-extrabold rounded-xl transition-all ${
                       isActive 
-                        ? 'bg-[#ff1801]/15 text-white border border-[#ff1801]/30 shadow-[0_0_12px_var(--f1-red-glow)]' 
-                        : 'text-gray-400 hover:text-white hover:bg-white/5'
+                        ? 'bg-[#ff1801] text-black shadow-[0_0_12px_var(--f1-red-glow)]' 
+                        : 'text-gray-300 bg-white/5 border border-white/5 hover:bg-white/10'
                     }`}
                     onClick={() => {
                       setActiveTab(tab.id as any);
+                      setMobileMenuOpen(false);
                       if (tab.id !== 'dashboard') {
                         setSelectedPart(null);
                       }
                     }}
                   >
-                    <Icon className="w-3.5 h-3.5" />
+                    <Icon className="w-4 h-4" />
                     <span>{tab.label}</span>
                   </button>
                 );
               })}
-            </nav>
-          </div>
-
-        </div>
-      </header>
+            </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
 
       {/* HUD Navigation Hints (Only in visualizer mode) */}
       {activeTab === 'dashboard' && (
@@ -443,7 +574,7 @@ function App() {
 
       {/* HUD & Overlays Layer */}
       <div className={`flex-1 w-full max-w-[1600px] mx-auto z-20 relative flex flex-col justify-between pointer-events-none order-3 ${
-        isMobile && activeTab === 'dashboard' ? 'px-4 py-2 h-auto' : 'p-6'
+        isMobile && activeTab === 'dashboard' ? 'px-4 py-2 h-auto' : 'p-4 pt-20 md:p-6 md:pt-24'
       }`}>
 
         {/* Dashboard 3D HUD (Interactive Controls overlay) */}

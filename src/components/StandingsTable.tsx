@@ -84,7 +84,41 @@ export function StandingsTable({
       </div>
 
       {standingsType === 'drivers' ? (
-        <div className="table-container lg:max-h-[60vh] overflow-y-auto pr-1">
+        <>
+        {/* Mobile Standings Cards (screens < 640px) */}
+        <div className="flex flex-col gap-3 sm:hidden mt-2">
+          {getFilteredDrivers().map(standing => {
+            const colorInfo = getDriverDetails(standing.Driver.code, standing.Constructors[0]?.constructorId, standing.Driver.url);
+            return (
+              <div 
+                key={standing.Driver.driverId}
+                onClick={() => onSelectDriver(standing.Driver.driverId)}
+                className="glass-panel p-4 flex items-center justify-between border border-white/5 hover:border-white/10 active:bg-white/5 pointer-events-auto cursor-pointer"
+              >
+                <div className="flex items-center gap-3">
+                  <span className="text-sm font-black font-mono-numbers text-gray-400">P{standing.position}</span>
+                  <span className="w-1 h-8 block rounded-full" style={{ backgroundColor: colorInfo.color, boxShadow: `0 0 8px ${colorInfo.color}` }}></span>
+                  <div className="flex flex-col">
+                    <span className="text-sm font-bold text-white flex items-center gap-1.5">
+                      {standing.Driver.givenName} {standing.Driver.familyName}
+                      <span className="text-base select-none">{FLAG_MAP[standing.Driver.nationality] || ''}</span>
+                    </span>
+                    <span className="text-[10px] text-gray-400 font-semibold uppercase tracking-wider">{standing.Constructors[0]?.name || 'N/A'}</span>
+                  </div>
+                </div>
+                <div className="text-right">
+                  <span className="text-sm font-bold text-[#ff1801] font-mono-numbers">{standing.points} PTS</span>
+                  <span className="block text-[8px] text-gray-500 font-extrabold uppercase mt-0.5">{standing.wins} WINS</span>
+                </div>
+              </div>
+            );
+          })}
+          {getFilteredDrivers().length === 0 && (
+            <div className="text-center py-6 text-gray-400 italic">No drivers found</div>
+          )}
+        </div>
+
+        <div className="table-container lg:max-h-[60vh] overflow-y-auto pr-1 hidden sm:block">
           <table className="f1-table w-full">
             <thead>
               <tr className="border-b border-white/10">
@@ -134,8 +168,42 @@ export function StandingsTable({
             </tbody>
           </table>
         </div>
+        </>
       ) : (
-        <div className="table-container lg:max-h-[60vh] overflow-y-auto pr-1">
+        <>
+        {/* Mobile Constructors Standings Cards (screens < 640px) */}
+        <div className="flex flex-col gap-3 sm:hidden mt-2">
+          {getFilteredConstructors().map(standing => {
+            const color = CONSTRUCTOR_COLORS[standing.Constructor.constructorId] || '#ffffff';
+            return (
+              <div 
+                key={standing.Constructor.constructorId}
+                onClick={() => onSelectConstructor(standing.Constructor.constructorId)}
+                className="glass-panel p-4 flex items-center justify-between border border-white/5 hover:border-white/10 active:bg-white/5 pointer-events-auto cursor-pointer"
+              >
+                <div className="flex items-center gap-3">
+                  <span className="text-sm font-black font-mono-numbers text-gray-400">P{standing.position}</span>
+                  <span className="w-1 h-8 block rounded-full" style={{ backgroundColor: color, boxShadow: `0 0 8px ${color}` }}></span>
+                  <div className="flex flex-col">
+                    <span className="text-sm font-bold text-white flex items-center gap-1.5">
+                      {standing.Constructor.name}
+                    </span>
+                    <span className="text-[10px] text-gray-400 font-semibold uppercase tracking-wider">{standing.Constructor.nationality}</span>
+                  </div>
+                </div>
+                <div className="text-right">
+                  <span className="text-sm font-bold text-[#ff1801] font-mono-numbers">{standing.points} PTS</span>
+                  <span className="block text-[8px] text-gray-500 font-extrabold uppercase mt-0.5">{standing.wins} WINS</span>
+                </div>
+              </div>
+            );
+          })}
+          {getFilteredConstructors().length === 0 && (
+            <div className="text-center py-6 text-gray-400 italic">No constructors found</div>
+          )}
+        </div>
+
+        <div className="table-container lg:max-h-[60vh] overflow-y-auto pr-1 hidden sm:block">
           <table className="f1-table w-full">
             <thead>
               <tr className="border-b border-white/10">
@@ -184,6 +252,7 @@ export function StandingsTable({
             </tbody>
           </table>
         </div>
+        </>
       )}
     </div>
   );
