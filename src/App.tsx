@@ -73,6 +73,21 @@ function App() {
   const [selectedConstructorId, setSelectedConstructorId] = useState<string | null>(null);
   const [selectedRaceRound, setSelectedRaceRound] = useState<string | null>(null);
 
+  // Mobile UI toggle for 3D Dashboard cards
+  const [mobilePanel, setMobilePanel] = useState<'none' | 'telemetry' | 'configurator'>('none');
+
+  useEffect(() => {
+    if (activeTab !== 'dashboard') {
+      setMobilePanel('none');
+    }
+  }, [activeTab]);
+
+  useEffect(() => {
+    if (selectedPart) {
+      setMobilePanel('configurator');
+    }
+  }, [selectedPart]);
+
   // Fetch F1 Data
   useEffect(() => {
     const fetchF1Data = async () => {
@@ -443,6 +458,8 @@ function App() {
               selectedPart={selectedPart}
               activePartInfo={activePartInfo}
               setSelectedPart={setSelectedPart}
+              mobilePanel={mobilePanel}
+              setMobilePanel={setMobilePanel}
             />
           )}
         </AnimatePresence>

@@ -37,6 +37,9 @@ interface PitWallDashboardProps {
     stats: { label: string; value: string }[];
   } | null;
   setSelectedPart: (val: string | null) => void;
+  // Mobile drawer controls
+  mobilePanel: 'none' | 'telemetry' | 'configurator';
+  setMobilePanel: (val: 'none' | 'telemetry' | 'configurator') => void;
 }
 
 export function PitWallDashboard({
@@ -56,6 +59,8 @@ export function PitWallDashboard({
   selectedPart,
   activePartInfo,
   setSelectedPart,
+  mobilePanel,
+  setMobilePanel,
 }: PitWallDashboardProps) {
 
   // Calculate RPM LED lights count
@@ -75,7 +80,7 @@ export function PitWallDashboard({
     <div className="grid grid-cols-12 gap-6 w-full h-full flex-1 items-end pointer-events-none mt-10">
       
       {/* ── Left Column: Telemetry Console ── */}
-      <div className="col-span-12 lg:col-span-4 self-end pointer-events-auto mb-4">
+      <div className={`col-span-12 lg:col-span-4 self-end pointer-events-auto mb-4 ${mobilePanel === 'telemetry' ? 'block' : 'hidden lg:block'}`}>
         <div className="glass-panel glass-panel-accent p-5 flex flex-col gap-4 border border-white/10 relative overflow-hidden">
           
           {/* Ambient red light effect */}
@@ -199,7 +204,7 @@ export function PitWallDashboard({
       <div className="col-span-12 lg:col-span-4 h-1 pointer-events-none"></div>
 
       {/* ── Right Column: Configurator & Parts Focus ── */}
-      <div className="col-span-12 lg:col-span-4 self-end pointer-events-auto flex flex-col gap-4 mb-4">
+      <div className={`col-span-12 lg:col-span-4 self-end pointer-events-auto flex flex-col gap-4 mb-4 ${mobilePanel === 'configurator' ? 'block' : 'hidden lg:block'}`}>
         
         {/* Active Car Component hotspot card */}
         {selectedPart && activePartInfo && (
@@ -361,6 +366,31 @@ export function PitWallDashboard({
         </div>
 
       </div>
+
+      {/* Floating Toggle Buttons for Mobile Dashboard View */}
+      <div className="fixed bottom-6 left-1/2 -translate-x-1/2 z-40 flex gap-3 pointer-events-auto lg:hidden bg-black/80 backdrop-blur-md border border-white/10 px-4 py-2 rounded-full shadow-2xl">
+        <button 
+          onClick={() => setMobilePanel(mobilePanel === 'telemetry' ? 'none' : 'telemetry')}
+          className={`px-4 py-2 rounded-full text-[10px] font-black uppercase tracking-wider border transition-all ${
+            mobilePanel === 'telemetry' 
+              ? 'bg-[#ff1801] border-[#ff1801] text-black shadow-[0_0_12px_var(--f1-red-glow)]' 
+              : 'bg-white/5 border-white/5 text-gray-300 hover:text-white'
+          }`}
+        >
+          📊 Telemetry
+        </button>
+        <button 
+          onClick={() => setMobilePanel(mobilePanel === 'configurator' ? 'none' : 'configurator')}
+          className={`px-4 py-2 rounded-full text-[10px] font-black uppercase tracking-wider border transition-all ${
+            mobilePanel === 'configurator' 
+              ? 'bg-[#ff1801] border-[#ff1801] text-black shadow-[0_0_12px_var(--f1-red-glow)]' 
+              : 'bg-white/5 border-white/5 text-gray-300 hover:text-white'
+          }`}
+        >
+          🔧 Configurator
+        </button>
+      </div>
+
     </div>
   );
 }
