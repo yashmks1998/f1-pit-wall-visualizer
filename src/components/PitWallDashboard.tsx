@@ -1,5 +1,7 @@
+import { useState, useEffect } from 'react';
 import { Gauge, Settings, ShieldAlert, Zap } from 'lucide-react';
 import { COLOR_PRESETS } from '../utils/f1Constants';
+import { useMediaQuery } from '../hooks/useMediaQuery';
 
 interface Telemetry {
   speed: number;
@@ -59,9 +61,18 @@ export function PitWallDashboard({
   selectedPart,
   activePartInfo,
   setSelectedPart,
-  mobilePanel,
-  setMobilePanel,
 }: PitWallDashboardProps) {
+
+  const isMobile = useMediaQuery('(max-width: 768px)');
+  const [telemetryExpanded, setTelemetryExpanded] = useState(false);
+  const [configExpanded, setConfigExpanded] = useState(false);
+
+  // Auto-expand configurator on mobile when a part is focused
+  useEffect(() => {
+    if (selectedPart && isMobile) {
+      setConfigExpanded(true);
+    }
+  }, [selectedPart, isMobile]);
 
   // Calculate RPM LED lights count
   const maxRpm = 15000;
@@ -77,10 +88,25 @@ export function PitWallDashboard({
   const gY = Math.cos(performance.now() * 0.003) * (telemetry.gForce / gMax) * 40;
 
   return (
-    <div className="grid grid-cols-12 gap-6 w-full h-full flex-1 items-end pointer-events-none mt-10">
+    <div className="grid grid-cols-12 gap-4 lg:gap-6 w-full h-full flex-1 items-end pointer-events-none mt-4 lg:mt-10">
       
+      {/* Mobile Telemetry Accordion Header */}
+      {isMobile && (
+        <button 
+          onClick={() => setTelemetryExpanded(!telemetryExpanded)}
+          className="col-span-12 flex items-center justify-between bg-black/60 border border-white/10 px-4 py-3.5 rounded-2xl pointer-events-auto shadow-md"
+        >
+          <div className="flex items-center gap-2">
+            <Gauge className="w-4 h-4 text-[#ff1801] animate-pulse" />
+            <span className="font-bold text-xs uppercase tracking-wider text-white">📊 F1 Telemetry Console</span>
+          </div>
+          <span className="text-[10px] text-gray-400 font-black uppercase tracking-wider">{telemetryExpanded ? '▲ Collapse' : '▼ Expand'}</span>
+        </button>
+      )}
+
       {/* ── Left Column: Telemetry Console ── */}
-      <div className={`col-span-12 lg:col-span-4 self-end pointer-events-auto mb-4 ${mobilePanel === 'telemetry' ? 'block' : 'hidden lg:block'}`}>
+      {(!isMobile || telemetryExpanded) && (
+        <div className={`col-span-12 lg:col-span-4 self-end pointer-events-auto mb-4 animate-slide-up`}>
         <div className="glass-panel glass-panel-accent p-5 flex flex-col gap-4 border border-white/10 relative overflow-hidden">
           
           {/* Ambient red light effect */}
@@ -122,7 +148,10 @@ export function PitWallDashboard({
           <div className="grid grid-cols-12 gap-3 items-center border-t border-white/5 pt-3">
             {/* Big Gear Counter */}
             <div className="col-span-4 flex flex-col items-center justify-center border-r border-white/10 pr-3">
-              <span className="text-5xl font-black text-white tracking-tighter font-mono-numbers leading-none drop-shadow-[0_2px_8px_rgba(255,255,255,0.15)]">
+              <span 
+                className="font-black text-white tracking-tighter font-mono-numbers leading-none drop-shadow-[0_2px_8px_rgba(255,255,255,0.15)]"
+                style={{ fontSize: 'clamp(2.5rem, 8vw, 3.5rem)' }}
+              >
                 {telemetry.gear}
               </span>
               <span className="text-[9px] font-black text-gray-400 uppercase tracking-widest mt-1">Gear</span>
@@ -131,7 +160,10 @@ export function PitWallDashboard({
             {/* Speed & RPM Stats */}
             <div className="col-span-8 flex flex-col gap-1 pl-2">
               <div className="flex items-baseline justify-between">
-                <span className="text-3xl font-extrabold text-white font-mono-numbers leading-none">
+                <span 
+                  className="font-extrabold text-white font-mono-numbers leading-none"
+                  style={{ fontSize: 'clamp(1.5rem, 5vw, 2rem)' }}
+                >
                   {telemetry.speed}
                 </span>
                 <span className="text-[10px] font-black text-[#ff1801] uppercase tracking-widest ml-1">KM/H</span>
@@ -194,17 +226,32 @@ export function PitWallDashboard({
               </span>
               <span className="text-[8px] text-gray-400 italic">SF90 Peak decel: 5.8G</span>
             </div>
-
           </div>
 
         </div>
       </div>
+      )}
 
       {/* Center Spacer: empty for 3D model */}
-      <div className="col-span-12 lg:col-span-4 h-1 pointer-events-none"></div>
+      <div className="hidden lg:block lg:col-span-4 h-1 pointer-events-none"></div>
+
+      {/* Mobile Configurator Accordion Header */}
+      {isMobile && (
+        <button 
+          onClick={() => setConfigExpanded(!configExpanded)}
+          className="col-span-12 flex items-center justify-between bg-black/60 border border-white/10 px-4 py-3.5 rounded-2xl pointer-events-auto shadow-md mt-2"
+        >
+          <div className="flex items-center gap-2">
+            <Settings className="w-4 h-4 text-[#ff1801]" />
+            <span className="font-bold text-xs uppercase tracking-wider text-white">🔧 SF90 Configurator</span>
+          </div>
+          <span className="text-[10px] text-gray-400 font-black uppercase tracking-wider">{configExpanded ? '▲ Collapse' : '▼ Expand'}</span>
+        </button>
+      )}
 
       {/* ── Right Column: Configurator & Parts Focus ── */}
-      <div className={`col-span-12 lg:col-span-4 self-end pointer-events-auto flex flex-col gap-4 mb-4 ${mobilePanel === 'configurator' ? 'block' : 'hidden lg:block'}`}>
+      {(!isMobile || configExpanded) && (
+        <div className={`col-span-12 lg:col-span-4 self-end pointer-events-auto flex flex-col gap-4 mb-4 animate-slide-up`}>
         
         {/* Active Car Component hotspot card */}
         {selectedPart && activePartInfo && (
@@ -366,30 +413,7 @@ export function PitWallDashboard({
         </div>
 
       </div>
-
-      {/* Floating Toggle Buttons for Mobile Dashboard View */}
-      <div className="fixed bottom-6 left-1/2 -translate-x-1/2 z-40 flex gap-3 pointer-events-auto lg:hidden bg-black/80 backdrop-blur-md border border-white/10 px-4 py-2 rounded-full shadow-2xl">
-        <button 
-          onClick={() => setMobilePanel(mobilePanel === 'telemetry' ? 'none' : 'telemetry')}
-          className={`px-4 py-2 rounded-full text-[10px] font-black uppercase tracking-wider border transition-all ${
-            mobilePanel === 'telemetry' 
-              ? 'bg-[#ff1801] border-[#ff1801] text-black shadow-[0_0_12px_var(--f1-red-glow)]' 
-              : 'bg-white/5 border-white/5 text-gray-300 hover:text-white'
-          }`}
-        >
-          📊 Telemetry
-        </button>
-        <button 
-          onClick={() => setMobilePanel(mobilePanel === 'configurator' ? 'none' : 'configurator')}
-          className={`px-4 py-2 rounded-full text-[10px] font-black uppercase tracking-wider border transition-all ${
-            mobilePanel === 'configurator' 
-              ? 'bg-[#ff1801] border-[#ff1801] text-black shadow-[0_0_12px_var(--f1-red-glow)]' 
-              : 'bg-white/5 border-white/5 text-gray-300 hover:text-white'
-          }`}
-        >
-          🔧 Configurator
-        </button>
-      </div>
+      )}
 
     </div>
   );

@@ -16,9 +16,13 @@ const VignetteComponent = Vignette as FC<any>;
 
 interface PostProcessingProps {
   selectedPart: string | null;
+  isMobile?: boolean;
 }
 
-export function PostProcessing({ selectedPart: _selectedPart }: PostProcessingProps) {
+export function PostProcessing({ selectedPart: _selectedPart, isMobile }: PostProcessingProps) {
+  // If mobile, disable GPU-heavy post-processing passes to save frame rate and battery.
+  if (isMobile) return null;
+
   // No Depth of Field — it was causing the model to appear blurry.
   // We keep only subtle cinematic bloom, vignette, and grain for premium feel.
   return (

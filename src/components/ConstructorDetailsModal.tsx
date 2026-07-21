@@ -63,7 +63,7 @@ export function ConstructorDetailsModal({
   const color = CONSTRUCTOR_COLORS[constructorId] || '#ffffff';
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/75 backdrop-blur-sm">
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-0 md:p-4 bg-black/75 backdrop-blur-sm">
       {/* Click outside to close */}
       <div className="absolute inset-0" onClick={onClose}></div>
 
@@ -72,7 +72,7 @@ export function ConstructorDetailsModal({
         animate={{ scale: 1, opacity: 1 }}
         exit={{ scale: 0.9, opacity: 0 }}
         transition={{ type: 'spring', damping: 25, stiffness: 250 }}
-        className="w-full max-w-2xl bg-[#0d0d14] rounded-3xl border border-white/10 shadow-[0_20px_50px_rgba(0,0,0,0.8)] overflow-y-auto max-h-[90vh] md:overflow-hidden relative z-10 p-6 md:p-8"
+        className="w-full h-full md:h-auto max-w-none md:max-w-2xl bg-[#0d0d14] rounded-none md:rounded-3xl border-0 md:border border-white/10 shadow-[0_20px_50px_rgba(0,0,0,0.8)] overflow-y-auto md:overflow-hidden relative z-10 p-6 md:p-8"
       >
         {/* Glow Accent by Team Color */}
         <div 

@@ -9,6 +9,7 @@ import {
   ShieldAlert
 } from 'lucide-react';
 import './App.css';
+import { useMediaQuery } from './hooks/useMediaQuery';
 
 // 3D Scene & Telemetry Dashboard
 import { F1Scene } from './components/F1Scene';
@@ -30,6 +31,7 @@ import { DriverStanding, ConstructorStanding, Race, RaceResult, OpenF1Driver } f
 import { CONSTRUCTOR_COLORS, PART_DETAILS } from './utils/f1Constants';
 
 function App() {
+  const isMobile = useMediaQuery('(max-width: 768px)');
   // Navigation
   const [activeTab, setActiveTab] = useState<'dashboard' | 'standings' | 'calendar' | 'results' | 'drivers'>('dashboard');
   const [loading, setLoading] = useState(true);
@@ -301,10 +303,14 @@ function App() {
   const activePartInfo = selectedPart ? PART_DETAILS[selectedPart] : null;
 
   return (
-    <div className={`app-container bg-[#060608] text-white flex flex-col relative w-full min-h-screen ${activeTab === 'dashboard' ? 'overflow-hidden' : 'overflow-y-auto'}`}>
+    <div className={`app-container bg-[#060608] text-white flex flex-col relative w-full min-h-screen ${
+      (activeTab === 'dashboard' && !isMobile) ? 'overflow-hidden' : 'overflow-y-auto'
+    }`}>
       
       {/* 3D Scene Wrapper - Absolute Background */}
-      <div className="absolute inset-0 w-full h-full z-0">
+      <div className={`${
+        isMobile && activeTab === 'dashboard' ? 'relative w-full h-[40vh] shrink-0 order-2' : 'absolute inset-0 w-full h-full'
+      } z-0`}>
         <F1Scene
           color={carColor}
           selectedPart={selectedPart}
@@ -323,10 +329,10 @@ function App() {
       </div>
 
       {/* Cinematic Fog Vignette Shader Overlay */}
-      <div className="absolute inset-0 pointer-events-none z-10 bg-gradient-to-t from-[#060608]/95 via-transparent to-transparent"></div>
+      <div className={isMobile ? 'hidden' : 'absolute inset-0 pointer-events-none z-10 bg-gradient-to-t from-[#060608]/95 via-transparent to-transparent'}></div>
 
       {/* Premium Glassmorphic Header */}
-      <header className="f1-header w-full border-b border-[#ff1801]/60 bg-black/40 backdrop-blur-md z-40 relative px-6 py-4 flex items-center justify-between">
+      <header className="f1-header w-full border-b border-[#ff1801]/60 bg-black/40 backdrop-blur-md z-40 relative px-6 py-4 flex items-center justify-between order-first">
         <div className="header-container max-w-[1600px] mx-auto w-full flex items-center justify-between">
           
           {/* Logo & Brand */}
@@ -436,7 +442,9 @@ function App() {
       )}
 
       {/* HUD & Overlays Layer */}
-      <div className="flex-1 w-full max-w-[1600px] mx-auto p-6 z-20 relative flex flex-col justify-between pointer-events-none">
+      <div className={`flex-1 w-full max-w-[1600px] mx-auto z-20 relative flex flex-col justify-between pointer-events-none order-3 ${
+        isMobile && activeTab === 'dashboard' ? 'px-4 py-2 h-auto' : 'p-6'
+      }`}>
 
         {/* Dashboard 3D HUD (Interactive Controls overlay) */}
         <AnimatePresence mode="wait">

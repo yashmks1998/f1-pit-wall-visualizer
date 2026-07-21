@@ -8,6 +8,7 @@ import {
 import * as THREE from 'three';
 import { F1CarModel } from './F1CarModel';
 import { PostProcessing } from './PostProcessing';
+import { useMediaQuery } from '../hooks/useMediaQuery';
 
 interface F1SceneProps {
   color: string;
@@ -233,12 +234,13 @@ export function F1Scene({
   gear,
 }: F1SceneProps) {
   const controlsRef = useRef<any>(null);
+  const isMobile = useMediaQuery('(max-width: 768px)');
 
   return (
-    <div className="canvas-wrapper relative w-full h-full bg-[#060608]">
+    <div className="canvas-wrapper relative w-full h-full bg-[#060608]" style={{ touchAction: 'none' }}>
       <Canvas
-        shadows
-        dpr={[1, 2]}
+        shadows={!isMobile}
+        dpr={[1, isMobile ? 1.5 : 2]}
         gl={{
           antialias: true,
           powerPreference: 'high-performance',
@@ -267,8 +269,8 @@ export function F1Scene({
         <directionalLight
           position={[5, 8, 4]}
           intensity={2.8}
-          castShadow
-          shadow-mapSize={[2048, 2048]}
+          castShadow={!isMobile}
+          shadow-mapSize={isMobile ? [512, 512] : [2048, 2048]}
           shadow-bias={-0.0001}
           shadow-camera-far={18}
           shadow-camera-left={-5}
@@ -290,7 +292,7 @@ export function F1Scene({
           angle={Math.PI / 4}
           penumbra={0.9}
           color="#ffeacc"
-          castShadow
+          castShadow={!isMobile}
         />
 
         {/* ── Car model ── */}
@@ -355,7 +357,7 @@ export function F1Scene({
         />
 
         {/* ── Post-processing ── */}
-        <PostProcessing selectedPart={selectedPart} />
+        <PostProcessing selectedPart={selectedPart} isMobile={isMobile} />
       </Canvas>
     </div>
   );

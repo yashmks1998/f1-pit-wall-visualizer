@@ -210,3 +210,15 @@ body {
     box-shadow: 0 0 0 0 rgba(255, 24, 1, 0);
   }
 }
+
+/* Touch-friendly enhancements for mobile viewports */
+@media (max-width: 768px) {
+  .color-dot {
+    width: 36px;
+    height: 36px;
+  }
+  .visualizer-btn {
+    padding: 10px 16px;
+    font-size: 0.8rem;
+  }
+}
