@@ -42,7 +42,6 @@ export function F1CarModel({
   rimsColor,
   tireCompound,
   rideHeight,
-  steeringAngle,
   speed,
   brake,
   throttle,
