@@ -1,0 +1,212 @@
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Outfit:wght@400;500;600;700;800;900&display=swap');
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  --font-display: 'Outfit', sans-serif;
+  --font-sans: 'Inter', sans-serif;
+
+  /* Formula 1 Premium Dark Carbon & Neon Theme */
+  --f1-red: #ff1801;
+  --f1-red-glow: rgba(255, 24, 1, 0.35);
+  --f1-black: #060608;
+  --f1-card-bg: rgba(15, 15, 22, 0.65); /* Translucent dark */
+  --f1-card-hover: rgba(22, 22, 32, 0.85);
+  --f1-border: rgba(255, 255, 255, 0.08);
+  --f1-border-hover: rgba(255, 255, 255, 0.16);
+  
+  /* Text colors */
+  --text-primary: #f8fafc;
+  --text-secondary: #94a3b8; /* soft gray for secondary text */
+  --text-muted: #475569;
+
+  /* Layout and transition */
+  --transition-fast: 0.15s cubic-bezier(0.4, 0, 0.2, 1);
+  --transition-normal: 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+  --transition-slow: 0.45s cubic-bezier(0.4, 0, 0.2, 1);
+  
+  --shadow-sm: 0 2px 10px rgba(0, 0, 0, 0.5);
+  --shadow-md: 0 10px 35px rgba(0, 0, 0, 0.7);
+  --shadow-lg: 0 20px 50px rgba(0, 0, 0, 0.85);
+}
+
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+body {
+  background-color: var(--f1-black);
+  color: var(--text-primary);
+  font-family: var(--font-sans);
+  min-height: 100vh;
+  overflow-x: hidden;
+  position: relative;
+  /* Dark carbon fiber pattern with red/blue ambient lighting */
+  background-image: 
+    linear-gradient(45deg, rgba(255, 255, 255, 0.003) 25%, transparent 25%), 
+    linear-gradient(-45deg, rgba(255, 255, 255, 0.003) 25%, transparent 25%), 
+    linear-gradient(45deg, transparent 75%, rgba(255, 255, 255, 0.003) 75%), 
+    linear-gradient(-45deg, transparent 75%, rgba(255, 255, 255, 0.003) 75%),
+    radial-gradient(at 0% 0%, rgba(255, 24, 1, 0.08) 0px, transparent 50%),
+    radial-gradient(at 100% 100%, rgba(30, 65, 255, 0.06) 0px, transparent 50%);
+  background-size: 8px 8px, 8px 8px, 8px 8px, 8px 8px, 100% 100%, 100% 100%;
+  background-attachment: fixed;
+}
+
+/* Custom scrollbar matching premium dark carbon theme */
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+::-webkit-scrollbar-track {
+  background: var(--f1-black);
+}
+::-webkit-scrollbar-thumb {
+  background: var(--f1-border-hover);
+  border-radius: 4px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: var(--text-secondary);
+}
+
+/* Animations */
+@keyframes slideUp {
+  from {
+    opacity: 0;
+    transform: translateY(16px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.animate-slide-up {
+  animation: slideUp var(--transition-slow) cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+@keyframes pulseBorder {
+  0%, 100% { border-color: var(--f1-border); }
+  50% { border-color: var(--f1-red-glow); }
+}
+
+.pulse-border {
+  animation: pulseBorder 3s infinite ease-in-out;
+}
+
+/* Glassmorphism panel styles - optimized for dark theme */
+.glass-panel {
+  background: var(--f1-card-bg);
+  backdrop-filter: blur(20px) saturate(190%);
+  -webkit-backdrop-filter: blur(20px) saturate(190%);
+  border: 1px solid var(--f1-border);
+  border-radius: 16px;
+  box-shadow: var(--shadow-md);
+  transition: border-color var(--transition-normal), background var(--transition-normal);
+}
+
+.glass-panel-accent {
+  border-left: 4px solid var(--f1-red);
+}
+
+.glass-panel:hover {
+  border-color: var(--f1-border-hover);
+  background: var(--f1-card-hover);
+}
+
+/* Monospace font for telemetry dashboard metrics */
+.font-mono-numbers {
+  font-family: 'Courier New', Courier, monospace;
+  font-weight: 700;
+  letter-spacing: -0.5px;
+}
+
+/* Color picker dot */
+.color-dot {
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
+  cursor: pointer;
+  transition: transform 0.2s cubic-bezier(0.175, 0.885, 0.32, 1.275), border-color 0.2s;
+  border: 2px solid transparent;
+}
+
+.color-dot:hover {
+  transform: scale(1.18);
+}
+
+.color-dot.active {
+  transform: scale(1.24);
+  border-color: var(--text-primary);
+  box-shadow: 0 0 12px var(--f1-red-glow);
+}
+
+/* Custom visualizer buttons */
+.visualizer-btn {
+  background: rgba(255, 255, 255, 0.03);
+  border: 1px solid var(--f1-border);
+  color: var(--text-secondary);
+  font-size: 0.75rem;
+  padding: 6px 12px;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: all 0.2s;
+  text-transform: uppercase;
+  font-weight: 700;
+}
+
+.visualizer-btn:hover {
+  background: rgba(255, 255, 255, 0.08);
+  color: var(--text-primary);
+  border-color: var(--f1-border-hover);
+}
+
+.visualizer-btn.active {
+  background: var(--f1-red);
+  border-color: var(--f1-red);
+  color: #000000;
+  box-shadow: 0 0 10px var(--f1-red-glow);
+}
+
+/* Real-time telemetry graph bars */
+.telemetry-bar {
+  height: 6px;
+  background: rgba(255, 255, 255, 0.08);
+  border-radius: 3px;
+  overflow: hidden;
+}
+
+.telemetry-bar-fill-throttle {
+  height: 100%;
+  background: linear-gradient(90deg, #10b981 0%, #34d399 100%);
+  transition: width 0.1s linear;
+}
+
+.telemetry-bar-fill-brake {
+  height: 100%;
+  background: linear-gradient(90deg, #ef4444 0%, #f87171 100%);
+  transition: width 0.1s linear;
+}
+
+/* Hotspot overlay pulse */
+.hotspot-pulse {
+  animation: pulsePoint 2s infinite;
+}
+
+@keyframes pulsePoint {
+  0% {
+    box-shadow: 0 0 0 0 rgba(255, 24, 1, 0.7);
+  }
+  70% {
+    box-shadow: 0 0 0 8px rgba(255, 24, 1, 0);
+  }
+  100% {
+    box-shadow: 0 0 0 0 rgba(255, 24, 1, 0);
+  }
+}
