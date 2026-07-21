@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { motion, AnimatePresence } from 'framer-motion';
+import { motion, AnimatePresence, useReducedMotion } from 'framer-motion';
 import { 
   Compass, 
   Flag, 
@@ -36,6 +36,7 @@ import { CONSTRUCTOR_COLORS, PART_DETAILS } from './utils/f1Constants';
 function App() {
   const isMobile = useMediaQuery('(max-width: 768px)');
   const { theme, toggleTheme } = useTheme();
+  const shouldReduceMotion = useReducedMotion();
   // Navigation
   const [activeTab, setActiveTab] = useState<'dashboard' | 'standings' | 'calendar' | 'results' | 'drivers'>('dashboard');
   const [loading, setLoading] = useState(true);
@@ -342,7 +343,7 @@ function App() {
       {activeTab === 'dashboard' && (
         <div className="absolute top-24 left-6 md:left-12 z-30 pointer-events-none select-none max-w-lg font-display">
           <motion.h1 
-            initial={{ opacity: 0, y: 15 }}
+            initial={{ opacity: 0, y: shouldReduceMotion ? 0 : 15 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.8, ease: [0.16, 1, 0.3, 1] }}
             className="text-3xl md:text-5xl lg:text-6xl font-black uppercase tracking-tight text-text-primary leading-[0.9]"
@@ -351,7 +352,7 @@ function App() {
             SF90 Stradale
           </motion.h1>
           <motion.p 
-            initial={{ opacity: 0, y: 10 }}
+            initial={{ opacity: 0, y: shouldReduceMotion ? 0 : 10 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.8, delay: 0.15, ease: [0.16, 1, 0.3, 1] }}
             className="text-[10px] md:text-xs font-bold uppercase tracking-widest text-[#ff1801] mt-1"
@@ -505,9 +506,9 @@ function App() {
       <AnimatePresence>
         {mobileMenuOpen && isMobile && (
           <motion.div 
-            initial={{ opacity: 0, y: -10 }}
+            initial={{ opacity: 0, y: shouldReduceMotion ? 0 : -10 }}
             animate={{ opacity: 1, y: 0 }}
-            exit={{ opacity: 0, y: -10 }}
+            exit={{ opacity: 0, y: shouldReduceMotion ? 0 : -10 }}
             transition={{ duration: 0.25, ease: [0.16, 1, 0.3, 1] }}
             className="fixed top-16 left-0 right-0 bottom-0 z-50 bg-white/95 dark:bg-black/95 backdrop-blur-2xl px-6 py-8 flex flex-col gap-6 overflow-y-auto pointer-events-auto md:hidden border-t border-border"
           >
@@ -648,9 +649,9 @@ function App() {
         <AnimatePresence mode="wait">
           {activeTab !== 'dashboard' && (
             <motion.div 
-              initial={{ opacity: 0, y: 30 }}
+              initial={{ opacity: 0, y: shouldReduceMotion ? 0 : 30 }}
               animate={{ opacity: 1, y: 0 }}
-              exit={{ opacity: 0, y: 30 }}
+              exit={{ opacity: 0, y: shouldReduceMotion ? 0 : 30 }}
               transition={{ duration: 0.35 }}
               className="w-full max-w-[1400px] mx-auto pointer-events-auto mt-6 mb-6 lg:max-h-[75vh]"
             >
