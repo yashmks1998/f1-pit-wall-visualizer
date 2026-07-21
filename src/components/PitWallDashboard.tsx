@@ -83,129 +83,138 @@ export function PitWallDashboard({
 
   // G-Force Coordinate Mapping
   const gMax = 6.0;
-  const gX = Math.sin(performance.now() * 0.003) * (telemetry.gForce / gMax) * 30;
-  const gY = Math.cos(performance.now() * 0.003) * (telemetry.gForce / gMax) * 30;
+  const gX = Math.sin(performance.now() * 0.003) * (telemetry.gForce / gMax) * 20;
+  const gY = Math.cos(performance.now() * 0.003) * (telemetry.gForce / gMax) * 20;
+
+  // 1. Engine Tachometer Card
+  const renderRpmCard = () => (
+    <div className="glass-panel border border-border p-5 rounded-2xl bg-white/70 dark:bg-black/70 shadow-sm backdrop-blur-md relative overflow-hidden flex flex-col justify-between h-[150px]">
+      <div className="flex justify-between items-center text-[10px] font-black uppercase text-text-secondary tracking-widest border-b border-border pb-1.5">
+        <span>Engine RPM</span>
+        <span className="font-mono-numbers text-text-primary">{telemetry.rpm.toLocaleString()}</span>
+      </div>
+      <div className="flex gap-1 bg-bg-primary p-2 rounded-full border border-border my-1">
+        {Array.from({ length: ledCount }).map((_, index) => {
+          const isActive = index < activeLeds;
+          let ledColor = 'bg-border/30 dark:bg-border/20';
+          if (isActive) {
+            ledColor = index < 6 ? 'bg-green-500 shadow-[0_0_6px_rgba(34,197,94,0.4)]'
+                     : index < 8 ? 'bg-yellow-500 shadow-[0_0_6px_rgba(234,179,8,0.4)]'
+                     : 'bg-red-600 shadow-[0_0_8px_rgba(239,68,68,0.7)] animate-pulse';
+          }
+          return (
+            <div key={index} className={`flex-1 h-1.5 rounded-full transition-all duration-75 ${ledColor}`}></div>
+          );
+        })}
+      </div>
+      <div className="text-[10px] text-text-secondary flex justify-between items-center mt-1 border-t border-border/40 pt-1.5">
+        <span>Limit</span>
+        <span className="font-semibold font-mono-numbers">15,000 RPM</span>
+      </div>
+    </div>
+  );
+
+  // 2. Speed & Gear Card
+  const renderSpeedGearCard = () => (
+    <div className="glass-panel border border-border p-5 rounded-2xl bg-white/70 dark:bg-black/70 shadow-sm backdrop-blur-md relative overflow-hidden flex flex-col justify-between h-[150px]">
+      <div className="flex justify-between items-center text-[10px] font-black uppercase text-text-secondary tracking-widest border-b border-border pb-1.5">
+        <span>Gear & Speed</span>
+        <span className="font-mono-numbers text-[#ff1801] font-extrabold uppercase text-[8px]">Live</span>
+      </div>
+      <div className="flex justify-around items-center py-1">
+        {/* Gear */}
+        <div className="flex flex-col items-center justify-center">
+          <span className="font-black text-text-primary tracking-tighter font-mono-numbers leading-none" style={{ fontSize: 'clamp(2rem, 5vw, 2.6rem)' }}>
+            {telemetry.gear}
+          </span>
+          <span className="text-[8px] font-black text-text-secondary uppercase tracking-widest mt-0.5">Gear</span>
+        </div>
+        <div className="h-8 w-px bg-border"></div>
+        {/* Speed */}
+        <div className="flex flex-col items-center justify-center">
+          <div className="flex items-baseline gap-0.5">
+            <span className="font-black text-text-primary font-mono-numbers leading-none" style={{ fontSize: 'clamp(1.6rem, 4vw, 2.2rem)' }}>
+              {telemetry.speed}
+            </span>
+            <span className="text-[8px] font-black text-text-secondary uppercase tracking-widest">KM/H</span>
+          </div>
+          <span className="text-[8px] font-black text-text-secondary uppercase tracking-widest mt-0.5">Speed</span>
+        </div>
+      </div>
+      <div className="text-[10px] text-text-secondary border-t border-border pt-1.5 flex justify-between items-center">
+        <span>Lap Time</span>
+        <span className="font-mono-numbers text-text-primary font-bold">{telemetry.lapTime}</span>
+      </div>
+    </div>
+  );
+
+  // 3. Throttle & Brake Card
+  const renderPedalsCard = () => (
+    <div className="glass-panel border border-border p-5 rounded-2xl bg-white/70 dark:bg-black/70 shadow-sm backdrop-blur-md relative overflow-hidden flex flex-col justify-between h-[150px]">
+      <div className="flex justify-between items-center text-[10px] font-black uppercase text-text-secondary tracking-widest border-b border-border pb-1.5">
+        <span>Pedal Inputs</span>
+        <span className="font-mono-numbers text-text-secondary text-[8px]">Controls</span>
+      </div>
+      <div className="flex flex-col gap-2.5 py-1">
+        {/* Throttle */}
+        <div className="flex flex-col gap-1">
+          <div className="flex justify-between text-[9px] font-bold uppercase tracking-wider text-text-secondary">
+            <span className="text-emerald-500 flex items-center gap-0.5"><Zap className="w-3 h-3" /> THR</span>
+            <span className="font-mono-numbers text-text-primary">{telemetry.throttle}%</span>
+          </div>
+          <div className="h-1.5 bg-bg-primary border border-border rounded-full overflow-hidden">
+            <div className="h-full bg-emerald-500 rounded-full transition-all duration-75" style={{ width: `${telemetry.throttle}%` }}></div>
+          </div>
+        </div>
+        {/* Brake */}
+        <div className="flex flex-col gap-1">
+          <div className="flex justify-between text-[9px] font-bold uppercase tracking-wider text-text-secondary">
+            <span className="text-red-500 flex items-center gap-0.5"><ShieldAlert className="w-3 h-3" /> BRK</span>
+            <span className="font-mono-numbers text-text-primary">{telemetry.brake}%</span>
+          </div>
+          <div className="h-1.5 bg-bg-primary border border-border rounded-full overflow-hidden">
+            <div className="h-full bg-red-600 rounded-full transition-all duration-75" style={{ width: `${telemetry.brake}%` }}></div>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+
+  // 4. G-Force Card
+  const renderGForceCard = () => (
+    <div className="glass-panel border border-border p-5 rounded-2xl bg-white/70 dark:bg-black/70 shadow-sm backdrop-blur-md relative overflow-hidden flex flex-col justify-between h-[150px]">
+      <div className="flex justify-between items-center text-[10px] font-black uppercase text-text-secondary tracking-widest border-b border-border pb-1.5">
+        <span>G-Force Vector</span>
+        <span className="font-mono-numbers text-text-primary">{telemetry.gForce}G</span>
+      </div>
+      <div className="flex items-center gap-4 py-1">
+        <div className="w-12 h-12 rounded-full border border-border relative bg-bg-primary flex items-center justify-center shrink-0">
+          <div className="absolute top-0 bottom-0 left-1/2 w-px bg-border"></div>
+          <div className="absolute left-0 right-0 top-1/2 h-px bg-border"></div>
+          <div className="w-6 h-6 rounded-full border border-border absolute"></div>
+          <span 
+            className="absolute w-2 h-2 rounded-full bg-[#ff1801] shadow-[0_0_6px_#ff1801] transition-all duration-75"
+            style={{ transform: `translate(${gX}px, ${gY}px)` }}
+          ></span>
+        </div>
+        <div className="flex flex-col text-left font-sans">
+          <span className="text-[8px] font-bold text-text-secondary uppercase tracking-widest">Lateral Peak</span>
+          <span className="text-xs font-extrabold text-text-primary mt-0.5">5.8G Limit</span>
+        </div>
+      </div>
+      <div className="text-[8px] text-text-secondary border-t border-border pt-1.5">
+        SF90 Stradale active lateral telemetry
+      </div>
+    </div>
+  );
 
   // Render Telemetry Module
   const renderTelemetry = () => (
-    <div className="glass-panel border border-border p-6 flex flex-col gap-4 relative overflow-hidden bg-white/70 dark:bg-black/70 shadow-sm backdrop-blur-md">
-      {/* Accent light decoration */}
-      <div className="absolute top-0 right-0 w-24 h-24 bg-[#ff1801]/5 rounded-bl-full pointer-events-none"></div>
-
-      <div className="flex items-center justify-between border-b border-border pb-2">
-        <div className="flex items-center gap-2">
-          <Gauge className="w-4 h-4 text-[#ff1801]" />
-          <span className="font-extrabold text-xs uppercase tracking-widest text-text-primary">Live Telemetry</span>
-        </div>
-        <span className="text-[9px] font-black text-[#ff1801] bg-[#ff1801]/10 px-2 py-0.5 rounded border border-[#ff1801]/20 uppercase tracking-wider font-mono-numbers">
-          Active Feed
-        </span>
-      </div>
-
-      {/* RPM LED Bar */}
-      <div className="flex flex-col gap-1.5">
-        <div className="flex justify-between text-[8px] font-black uppercase text-text-secondary tracking-wider">
-          <span>Engine RPM Tachometer</span>
-          <span className="font-mono-numbers text-text-primary">{telemetry.rpm.toLocaleString()} / 15,000</span>
-        </div>
-        <div className="flex gap-1 bg-bg-primary p-1.5 rounded-full border border-border">
-          {Array.from({ length: ledCount }).map((_, index) => {
-            const isActive = index < activeLeds;
-            let ledColor = 'bg-border/30 dark:bg-border/20';
-            if (isActive) {
-              ledColor = index < 6 ? 'bg-green-500 shadow-[0_0_8px_rgba(34,197,94,0.5)]'
-                       : index < 8 ? 'bg-yellow-500 shadow-[0_0_8px_rgba(234,179,8,0.5)]'
-                       : 'bg-red-600 shadow-[0_0_10px_rgba(239,68,68,0.8)] animate-pulse';
-            }
-            return (
-              <div key={index} className={`flex-1 h-1.5 rounded-full transition-all duration-75 ${ledColor}`}></div>
-            );
-          })}
-        </div>
-      </div>
-
-      {/* Gear & Speed Dashboard Layout */}
-      <div className="grid grid-cols-12 gap-3 items-center border-t border-border pt-3">
-        {/* Big Gear Counter */}
-        <div className="col-span-4 flex flex-col items-center justify-center border-r border-border pr-3">
-          <span 
-            className="font-black text-text-primary tracking-tighter font-mono-numbers leading-none drop-shadow-[0_2px_8px_var(--border)]"
-            style={{ fontSize: 'clamp(2.5rem, 8vw, 3.5rem)' }}
-          >
-            {telemetry.gear}
-          </span>
-          <span className="text-[9px] font-black text-text-secondary uppercase tracking-widest mt-1">Gear</span>
-        </div>
-
-        {/* Speed & RPM Stats */}
-        <div className="col-span-8 flex flex-col gap-1 pl-2">
-          <div className="flex items-baseline justify-between">
-            <span 
-              className="font-extrabold text-text-primary font-mono-numbers leading-none"
-              style={{ fontSize: 'clamp(1.5rem, 5vw, 2rem)' }}
-            >
-              {telemetry.speed}
-            </span>
-            <span className="text-[10px] font-black text-[#ff1801] uppercase tracking-widest ml-1">KM/H</span>
-          </div>
-          <div className="flex items-baseline justify-between border-t border-border pt-1.5">
-            <span className="text-[9px] uppercase tracking-widest text-text-secondary font-bold">Lap Time</span>
-            <span className="text-sm font-bold text-text-primary font-mono-numbers">{telemetry.lapTime}</span>
-          </div>
-        </div>
-      </div>
-
-      {/* Throttle & Brake visualizer bars */}
-      <div className="flex flex-col gap-2 border-t border-border pt-3">
-        <div className="grid grid-cols-12 gap-2 items-center text-[9px] font-bold uppercase tracking-wider text-text-secondary">
-          <span className="col-span-3 text-emerald-400 flex items-center gap-0.5">
-            <Zap className="w-3 h-3" />
-            THR
-          </span>
-          <div className="col-span-7 h-1.5 bg-bg-primary border border-border rounded-full overflow-hidden">
-            <div className="h-full bg-emerald-500 rounded-full" style={{ width: `${telemetry.throttle}%` }}></div>
-          </div>
-          <span className="col-span-2 text-right font-mono-numbers text-text-primary">{telemetry.throttle}%</span>
-        </div>
-
-        <div className="grid grid-cols-12 gap-2 items-center text-[9px] font-bold uppercase tracking-wider text-text-secondary">
-          <span className="col-span-3 text-red-500 flex items-center gap-0.5">
-            <ShieldAlert className="w-3 h-3" />
-            BRK
-          </span>
-          <div className="col-span-7 h-1.5 bg-bg-primary border border-border rounded-full overflow-hidden">
-            <div className="h-full bg-red-600 rounded-full" style={{ width: `${telemetry.brake}%` }}></div>
-          </div>
-          <span className="col-span-2 text-right font-mono-numbers text-text-primary">{telemetry.brake}%</span>
-        </div>
-      </div>
-
-      {/* G-Force crosshair & Lateral Force Feed */}
-      <div className="grid grid-cols-12 gap-3 border-t border-border pt-3 items-center">
-        {/* G-Force Crosshair bubble chart */}
-        <div className="col-span-4 flex items-center justify-center">
-          <div className="w-16 h-16 rounded-full border border-border relative bg-bg-primary flex items-center justify-center">
-            {/* Axes */}
-            <div className="absolute top-0 bottom-0 left-1/2 w-px bg-border"></div>
-            <div className="absolute left-0 right-0 top-1/2 h-px bg-border"></div>
-            <div className="w-8 h-8 rounded-full border border-border absolute"></div>
-            
-            {/* G-Force bubble indicator */}
-            <span 
-              className="absolute w-2.5 h-2.5 rounded-full bg-[#ff1801] shadow-[0_0_8px_#ff1801] transition-all duration-75"
-              style={{ transform: `translate(${gX}px, ${gY}px)` }}
-            ></span>
-          </div>
-        </div>
-
-        <div className="col-span-8 flex flex-col gap-1 pl-2 text-left">
-          <span className="text-[9px] font-bold text-text-secondary uppercase tracking-widest">Lateral G-Force</span>
-          <span className="text-base font-extrabold text-text-primary font-mono-numbers">
-            {telemetry.gForce} <span className="text-xs text-[#ff1801]">G</span>
-          </span>
-          <span className="text-[8px] text-text-secondary italic">SF90 Peak decel: 5.8G</span>
-        </div>
-      </div>
+    <div className="flex flex-col gap-4 w-full">
+      {renderRpmCard()}
+      {renderSpeedGearCard()}
+      {renderPedalsCard()}
+      {renderGForceCard()}
     </div>
   );
 
@@ -232,7 +241,7 @@ export function PitWallDashboard({
               title={`${preset.name}: ${preset.desc}`}
             >
               {carColor === preset.value && (
-                <span className="w-2 h-2 rounded-full bg-white shadow-sm"></span>
+                <span className="w-2.5 h-2.5 rounded-full bg-white shadow-sm"></span>
               )}
             </button>
           ))}
@@ -351,16 +360,18 @@ export function PitWallDashboard({
       {/* Desktop Dashboard Grid (Screens >= 768px) */}
       {!isMobile && (
         <div className="grid grid-cols-12 gap-6 w-full h-full flex-1 items-end pointer-events-none mt-10">
-          {/* Left Column: Live Telemetry */}
-          <div className="col-span-12 md:col-span-4 self-end pointer-events-auto mb-4 animate-slide-up">
-            {renderTelemetry()}
+          {/* Left/Bottom Column: Live Telemetry Instrument Cluster */}
+          <div className="col-span-12 xl:col-span-8 self-end pointer-events-auto mb-4 animate-slide-up">
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 w-full">
+              {renderRpmCard()}
+              {renderSpeedGearCard()}
+              {renderPedalsCard()}
+              {renderGForceCard()}
+            </div>
           </div>
 
-          {/* Center Spacer: Empty to let 3D model shine */}
-          <div className="hidden md:block md:col-span-4 h-1 pointer-events-none"></div>
-
           {/* Right Column: Configurator Panel */}
-          <div className="col-span-12 md:col-span-4 self-end pointer-events-auto flex flex-col gap-4 mb-4 animate-slide-up">
+          <div className="col-span-12 xl:col-span-4 self-end pointer-events-auto flex flex-col gap-4 mb-4 animate-slide-up">
             {/* Component focused card */}
             {selectedPart && activePartInfo && (
               <div className="glass-panel p-5 border border-border flex flex-col gap-3 relative overflow-hidden bg-white/70 dark:bg-black/70 shadow-sm backdrop-blur-md">
