@@ -3,6 +3,7 @@ import { motion } from 'framer-motion';
 import { X, Trophy, Award, Calendar, Hash, Globe, User } from 'lucide-react';
 import { DriverStanding } from '../types/f1';
 import { FLAG_MAP } from '../utils/f1Constants';
+import { useMediaQuery } from '../hooks/useMediaQuery';
 
 interface DriverProfileModalProps {
   driverId: string;
@@ -27,6 +28,7 @@ export function DriverProfileModal({
 }: DriverProfileModalProps) {
   const [wikiSummary, setWikiSummary] = useState<WikiSummary | null>(null);
   const [loadingBio, setLoadingBio] = useState(false);
+  const isMobile = useMediaQuery('(max-width: 768px)');
 
   const standing = driverStandings.find(s => s.Driver.driverId === driverId);
 
@@ -66,36 +68,41 @@ export function DriverProfileModal({
   const heroImage = wikiSummary?.thumbnail?.source || colorInfo.headshot;
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-0 md:p-4 bg-black/75 backdrop-blur-sm">
+    <div className="fixed inset-0 z-50 flex items-end md:items-center justify-center p-0 md:p-4 bg-black/60 dark:bg-black/80 backdrop-blur-md">
       {/* Click outside to close */}
       <div className="absolute inset-0" onClick={onClose}></div>
 
       <motion.div
-        initial={{ scale: 0.9, opacity: 0 }}
-        animate={{ scale: 1, opacity: 1 }}
-        exit={{ scale: 0.9, opacity: 0 }}
-        transition={{ type: 'spring', damping: 25, stiffness: 250 }}
-        className="w-full h-full md:h-auto max-w-none md:max-w-2xl bg-[#0d0d14] rounded-none md:rounded-3xl border-0 md:border border-white/10 shadow-[0_20px_50px_rgba(0,0,0,0.8)] overflow-y-auto md:overflow-hidden relative z-10"
+        initial={isMobile ? { y: '100%' } : { scale: 0.95, opacity: 0 }}
+        animate={isMobile ? { y: 0 } : { scale: 1, opacity: 1 }}
+        exit={isMobile ? { y: '100%' } : { scale: 0.95, opacity: 0 }}
+        transition={{ type: 'spring', damping: 26, stiffness: 240 }}
+        className="w-full max-h-[90dvh] md:max-h-none md:h-auto md:max-w-2xl bg-bg-secondary rounded-t-[32px] md:rounded-3xl border-t md:border-t-0 md:border border-border shadow-lg overflow-y-auto md:overflow-hidden relative z-10 p-0"
       >
         {/* Glow Accent by Team Color */}
         <div 
-          className="absolute -top-32 -left-32 w-64 h-64 blur-3xl pointer-events-none rounded-full opacity-20"
+          className="absolute -top-32 -left-32 w-64 h-64 blur-3xl pointer-events-none rounded-full opacity-10"
           style={{ backgroundColor: colorInfo.color }}
         ></div>
+
+        {/* Drag handle for mobile */}
+        {isMobile && (
+          <div className="w-12 h-1 bg-border rounded-full mx-auto mt-3 mb-1 cursor-pointer" onClick={onClose}></div>
+        )}
 
         {/* Close Button */}
         <button 
           onClick={onClose}
-          className="absolute top-4 right-4 p-2 bg-white/5 hover:bg-white/10 text-gray-400 hover:text-white rounded-full border border-white/5 hover:border-white/10 transition-all z-20"
+          className="absolute top-4 right-4 p-2 bg-bg-primary hover:bg-border/30 text-text-secondary hover:text-text-primary rounded-full border border-border transition-all z-20"
         >
-          <X className="w-5 h-5" />
+          <X className="w-4 h-4" />
         </button>
 
         <div className="flex flex-col md:flex-row relative">
           
           {/* Driver Portrait Section */}
-          <div className="md:w-2/5 bg-gradient-to-b from-[#181824] to-[#0d0d14] p-8 flex flex-col items-center justify-center relative border-b md:border-b-0 md:border-r border-white/5 min-h-[280px]">
-            <div className="w-40 h-40 rounded-2xl overflow-hidden border border-white/10 bg-white/5 p-1 relative z-10 flex items-center justify-center">
+          <div className="md:w-2/5 bg-bg-primary p-8 flex flex-col items-center justify-center relative border-b md:border-b-0 md:border-r border-border min-h-[250px]">
+            <div className="w-36 h-36 rounded-2xl overflow-hidden border border-border bg-bg-secondary p-1 relative z-10 flex items-center justify-center shadow-sm">
               <img 
                 src={heroImage} 
                 alt={Driver.familyName} 
@@ -107,7 +114,7 @@ export function DriverProfileModal({
             </div>
             
             <span 
-              className="absolute bottom-4 left-1/2 -translate-x-1/2 text-sm font-extrabold px-3 py-1 rounded-full text-black uppercase tracking-wider font-display font-black shadow-lg"
+              className="absolute bottom-4 left-1/2 -translate-x-1/2 text-[10px] font-black px-3.5 py-1 rounded-full text-white uppercase tracking-widest shadow-sm font-sans"
               style={{ backgroundColor: colorInfo.color }}
             >
               {constructor?.name || 'F1 Team'}
@@ -115,70 +122,70 @@ export function DriverProfileModal({
           </div>
 
           {/* Details Section */}
-          <div className="md:w-3/5 p-8 flex flex-col justify-between max-h-[80vh] overflow-y-auto">
+          <div className="md:w-3/5 p-8 flex flex-col justify-between max-h-[60vh] md:max-h-[80vh] overflow-y-auto">
             <div className="flex flex-col gap-4">
               
               {/* Profile Header */}
               <div>
                 <div className="flex items-center gap-2">
-                  <span className="font-mono-numbers font-black text-xl text-gray-400">#{Driver.permanentNumber}</span>
-                  <span className="text-xl leading-none">{flag}</span>
+                  <span className="font-mono-numbers font-black text-lg text-text-secondary">#{Driver.permanentNumber}</span>
+                  <span className="text-lg leading-none select-none">{flag}</span>
                 </div>
-                <h3 className="text-3xl font-black text-white mt-1 font-display tracking-tight leading-tight">
+                <h3 className="text-2xl font-bold text-text-primary mt-1 font-display tracking-tight leading-tight">
                   {Driver.givenName} {Driver.familyName}
                 </h3>
-                <p className="text-sm font-bold uppercase tracking-widest mt-1" style={{ color: colorInfo.color }}>
+                <p className="text-xs font-semibold uppercase tracking-widest mt-1" style={{ color: colorInfo.color }}>
                   {wikiSummary?.description || `${Driver.nationality} Racing Driver`}
                 </p>
               </div>
 
               {/* Biography Extract */}
-              <div className="border-t border-white/5 pt-3">
-                <h4 className="text-[10px] font-extrabold uppercase text-gray-500 tracking-wider mb-2">Driver Biography</h4>
+              <div className="border-t border-border pt-3">
+                <h4 className="text-[9px] font-extrabold uppercase text-text-secondary tracking-widest mb-2">Biography</h4>
                 {loadingBio ? (
                   <div className="h-16 flex items-center justify-center">
-                    <div className="w-6 h-6 border-2 border-white/10 border-t-[#ff1801] rounded-full animate-spin"></div>
+                    <div className="w-6 h-6 border-2 border-border/20 border-t-[#ff1801] rounded-full animate-spin"></div>
                   </div>
                 ) : (
-                  <p className="text-sm text-gray-300 leading-relaxed max-h-[150px] overflow-y-auto pr-1 text-justify">
+                  <p className="text-xs text-text-secondary leading-relaxed max-h-[140px] overflow-y-auto pr-1 text-justify">
                     {wikiSummary?.extract || 'No biographical records loaded in telemetry logs.'}
                   </p>
                 )}
               </div>
 
               {/* Stats Cards */}
-              <div className="grid grid-cols-3 gap-3 border-t border-white/5 pt-4">
-                <div className="bg-white/5 border border-white/5 rounded-xl p-3 text-center">
-                  <User className="w-4 h-4 text-gray-500 mx-auto mb-1" />
-                  <span className="text-[9px] uppercase tracking-wider text-gray-400 font-bold">Standing</span>
-                  <p className="text-base font-extrabold text-[#ff1801] font-mono-numbers mt-1">P{position}</p>
+              <div className="grid grid-cols-3 gap-2.5 border-t border-border pt-4">
+                <div className="bg-bg-primary border border-border rounded-xl p-3 text-center">
+                  <User className="w-3.5 h-3.5 text-text-secondary mx-auto mb-1" />
+                  <span className="text-[8px] uppercase tracking-wider text-text-secondary font-bold">Standing</span>
+                  <p className="text-sm font-bold text-[#ff1801] font-mono-numbers mt-1.5">P{position}</p>
                 </div>
-                <div className="bg-white/5 border border-white/5 rounded-xl p-3 text-center">
-                  <Trophy className="w-4 h-4 text-gray-500 mx-auto mb-1" />
-                  <span className="text-[9px] uppercase tracking-wider text-gray-400 font-bold">Wins</span>
-                  <p className="text-base font-extrabold text-white font-mono-numbers mt-1">{wins}</p>
+                <div className="bg-bg-primary border border-border rounded-xl p-3 text-center">
+                  <Trophy className="w-3.5 h-3.5 text-text-secondary mx-auto mb-1" />
+                  <span className="text-[8px] uppercase tracking-wider text-text-secondary font-bold">Wins</span>
+                  <p className="text-sm font-bold text-text-primary font-mono-numbers mt-1.5">{wins}</p>
                 </div>
-                <div className="bg-white/5 border border-white/5 rounded-xl p-3 text-center">
-                  <Award className="w-4 h-4 text-gray-500 mx-auto mb-1" />
-                  <span className="text-[9px] uppercase tracking-wider text-gray-400 font-bold">Points</span>
-                  <p className="text-base font-extrabold text-white font-mono-numbers mt-1">{points}</p>
+                <div className="bg-bg-primary border border-border rounded-xl p-3 text-center">
+                  <Award className="w-3.5 h-3.5 text-text-secondary mx-auto mb-1" />
+                  <span className="text-[8px] uppercase tracking-wider text-text-secondary font-bold">Points</span>
+                  <p className="text-sm font-bold text-text-primary font-mono-numbers mt-1.5">{points}</p>
                 </div>
               </div>
 
             </div>
 
             {/* Profile Footer Metrics */}
-            <div className="border-t border-white/5 pt-4 mt-6 grid grid-cols-2 gap-y-2 gap-x-4 text-xs font-semibold text-gray-400">
-              <div className="flex items-center gap-2">
-                <Calendar className="w-3.5 h-3.5 text-gray-600" />
+            <div className="border-t border-border pt-4 mt-6 grid grid-cols-2 gap-y-2 gap-x-4 text-xs font-semibold text-text-secondary">
+              <div className="flex items-center gap-1.5">
+                <Calendar className="w-3.5 h-3.5 text-border-hover" />
                 <span>Born: {new Date(Driver.dateOfBirth).toLocaleDateString([], { year: 'numeric', month: 'short', day: 'numeric' })}</span>
               </div>
-              <div className="flex items-center gap-2">
-                <Globe className="w-3.5 h-3.5 text-gray-600" />
+              <div className="flex items-center gap-1.5">
+                <Globe className="w-3.5 h-3.5 text-border-hover" />
                 <span>Nation: {Driver.nationality}</span>
               </div>
-              <div className="flex items-center gap-2 col-span-2">
-                <Hash className="w-3.5 h-3.5 text-gray-600" />
+              <div className="flex items-center gap-1.5 col-span-2 mt-1">
+                <Hash className="w-3.5 h-3.5 text-border-hover" />
                 <a 
                   href={Driver.url} 
                   target="_blank" 
