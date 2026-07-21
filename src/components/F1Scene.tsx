@@ -176,7 +176,7 @@ function CameraController({
   const targetPos    = useRef(new THREE.Vector3(3.5, 1.2, 4.5));
   const targetLookAt = useRef(new THREE.Vector3(0, 0, 0));
 
-  useFrame(() => {
+  useFrame((_, delta) => {
     // Part-focus camera positions
     if (selectedPart === 'aerodynamics') {
       targetPos.current.set(0.0, 0.45, 3.8);
@@ -204,14 +204,21 @@ function CameraController({
     const shakeX   = Math.sin(time) * shakeAmp;
     const shakeY   = Math.cos(time * 0.7) * shakeAmp * 0.6;
 
-    // Lerp camera position
-    camera.position.lerp(targetPos.current, 0.045);
-    camera.position.x += shakeX;
-    camera.position.y += shakeY;
+    // Use delta for frame-rate independent lerp (approx lambda 4.0)
+    const alpha = 1.0 - Math.exp(-4.0 * delta);
 
-    // Lerp orbit target
+    // Lerp camera position smoothly
+    camera.position.lerp(targetPos.current, alpha);
+
+    // Lerp orbit target and add shake to the target instead of camera.position to avoid fighting OrbitControls
     if (controlsRef.current) {
-      controlsRef.current.target.lerp(targetLookAt.current, 0.05);
+      controlsRef.current.target.lerp(targetLookAt.current, alpha);
+      
+      // Apply shake to target so the camera orbits slightly, avoiding position fighting
+      if (!selectedPart) {
+        controlsRef.current.target.x += shakeX;
+        controlsRef.current.target.y += shakeY;
+      }
     }
   });
 

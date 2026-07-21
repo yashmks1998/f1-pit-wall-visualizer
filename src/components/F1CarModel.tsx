@@ -50,9 +50,19 @@ export function F1CarModel({
 }: F1CarModelProps) {
   const { scene } = useGLTF(import.meta.env.BASE_URL + 'f1_car.glb');
 
-  // Clone the scene so we get independent meshes/materials per instance
+  // Clone the scene and its materials so we get independent meshes/materials per instance
   const clonedScene = useMemo(() => {
     const clone = scene.clone(true);
+    clone.traverse((obj) => {
+      if ((obj as THREE.Mesh).isMesh) {
+        const mesh = obj as THREE.Mesh;
+        if (Array.isArray(mesh.material)) {
+          mesh.material = mesh.material.map(m => m.clone());
+        } else {
+          mesh.material = (mesh.material as THREE.Material).clone();
+        }
+      }
+    });
     return clone;
   }, [scene]);
 
@@ -134,12 +144,12 @@ export function F1CarModel({
       mesh.castShadow    = true;
       mesh.receiveShadow = true;
 
-      const applyToMat = (mat: THREE.Material): THREE.Material => {
+      const applyToMat = (mat: THREE.Material) => {
         const m = mat.name.match(/\.(\d+)$/);
         const suffix = m ? parseInt(m[1], 10) : -1;
         const role   = SUFFIX_ROLE[suffix] ?? 'paint';
 
-        const c = (mat as THREE.MeshStandardMaterial).clone() as THREE.MeshStandardMaterial;
+        const c = mat as THREE.MeshStandardMaterial;
 
         switch (role) {
           case 'paint':
@@ -199,13 +209,12 @@ export function F1CarModel({
         }
 
         c.needsUpdate = true;
-        return c;
       };
 
       if (Array.isArray(mesh.material)) {
-        mesh.material = mesh.material.map(applyToMat) as THREE.Material[];
+        mesh.material.forEach(applyToMat);
       } else {
-        mesh.material = applyToMat(mesh.material);
+        applyToMat(mesh.material);
       }
     });
   }, [clonedScene, color, rimCfg, caliperHex, tireCompound]);
@@ -230,19 +239,19 @@ export function F1CarModel({
     const bumpAmp     = 0.002 + speedNorm * 0.009;    // 2–11 mm
     const rawBounce   = Math.sin(s.time * bumpFreq * Math.PI * 2) * bumpAmp
                       + Math.sin(s.time * bumpFreq * 0.37 * Math.PI * 2) * bumpAmp * 0.4;
-    s.bounce = THREE.MathUtils.lerp(s.bounce, rawBounce, 0.18);
+    s.bounce = THREE.MathUtils.damp(s.bounce, rawBounce, 15, delta);
 
     // ── Brake dive: nose dips forward under hard braking ─────────────────
     const brakeNorm   = brake / 100;
     const throttleNorm = throttle / 100;
     const rawPitch    = brakeNorm * -0.05 + throttleNorm * 0.012;
-    s.pitch = THREE.MathUtils.lerp(s.pitch, rawPitch, 0.09);
+    s.pitch = THREE.MathUtils.damp(s.pitch, rawPitch, 10, delta);
 
     // ── Corner lean: body rolls based on lateral G ────────────────────────
     const latG     = Math.max(0, gForce - 1.0);
     const leanDir  = Math.sin(s.time * 0.28);
     const rawRoll  = latG * 0.022 * leanDir;
-    s.roll = THREE.MathUtils.lerp(s.roll, rawRoll, 0.07);
+    s.roll = THREE.MathUtils.damp(s.roll, rawRoll, 8, delta);
 
     // Apply suspension + Ride Height offset to body group
     if (bodyRef.current) {
@@ -251,13 +260,6 @@ export function F1CarModel({
       bodyRef.current.rotation.x = s.pitch;
       bodyRef.current.rotation.z = s.roll;
     }
-
-    // Apply Steering Angle rotation to front wheels
-    frontWheelsRef.current.forEach((wheel) => {
-      // Convert steering degrees to radians.
-      // Rotate around the local Y axis.
-      wheel.rotation.y = steeringAngle * (Math.PI / 180);
-    });
 
     // ── Outer group: float + Y-rotation ──────────────────────────────────
     if (outerRef.current) {
@@ -268,12 +270,12 @@ export function F1CarModel({
 
         // Gentle float
         const targetY = Math.sin(s.time * 0.55) * 0.012 - 0.15;
-        s.floatY = THREE.MathUtils.lerp(s.floatY, targetY, 0.04);
+        s.floatY = THREE.MathUtils.damp(s.floatY, targetY, 4, delta);
         outerRef.current.position.y = s.floatY;
       } else {
         // Stop rotating and lock when a part is selected
-        outerRef.current.rotation.y = THREE.MathUtils.lerp(outerRef.current.rotation.y, 0, 0.06);
-        outerRef.current.position.y = THREE.MathUtils.lerp(outerRef.current.position.y, -0.15, 0.06);
+        outerRef.current.rotation.y = THREE.MathUtils.damp(outerRef.current.rotation.y, 0, 6, delta);
+        outerRef.current.position.y = THREE.MathUtils.damp(outerRef.current.position.y, -0.15, 6, delta);
       }
     }
   });

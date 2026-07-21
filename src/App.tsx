@@ -395,10 +395,10 @@ function App() {
         <div className="header-container max-w-[1600px] mx-auto w-full flex items-center justify-between">
           
           {/* Logo & Brand */}
-          <div className="brand-section flex items-center gap-3 cursor-pointer" onClick={() => { setActiveTab('dashboard'); setSelectedPart(null); setMobileMenuOpen(false); }}>
-            <div className="f1-logo text-2xl md:text-3xl font-extrabold italic text-[#ff1801] flex items-center tracking-tighter">
+          <div className="brand-section flex items-center gap-2 md:gap-3 cursor-pointer" onClick={() => { setActiveTab('dashboard'); setSelectedPart(null); setMobileMenuOpen(false); }}>
+            <div className="f1-logo text-xl md:text-3xl font-extrabold italic text-[#ff1801] flex items-center tracking-tighter">
               <span className="text-white font-black font-display">SF</span><span className="text-red-500 font-bold">90</span>
-              <span className="text-gray-400 text-xs tracking-normal font-bold pl-3 border-l border-white/10 ml-3 not-italic uppercase font-sans hidden sm:inline-block">
+              <span className="text-gray-400 text-[9px] md:text-xs tracking-normal font-bold pl-2 md:pl-3 border-l border-white/10 ml-2 md:ml-3 not-italic uppercase font-sans whitespace-nowrap">
                 Pit-Wall Control
               </span>
             </div>
@@ -580,12 +580,12 @@ function App() {
 
       {/* HUD Navigation Hints (Only in visualizer mode) */}
       {activeTab === 'dashboard' && (
-        <div className="absolute top-24 left-1/2 transform -translate-x-1/2 z-30 pointer-events-none select-none text-center bg-black/60 backdrop-blur-md border border-white/10 px-5 py-2 rounded-full text-[10px] uppercase tracking-widest text-gray-400 flex items-center gap-3 shadow-lg">
-          <span>🖱️ Left Click + Drag to Orbit</span>
+        <div className="absolute top-20 md:top-24 left-1/2 transform -translate-x-1/2 z-30 pointer-events-none select-none text-center bg-black/60 backdrop-blur-md border border-white/10 px-4 md:px-5 py-2 rounded-full text-[9px] md:text-[10px] uppercase tracking-widest text-gray-400 flex items-center gap-2 md:gap-3 shadow-lg whitespace-nowrap">
+          <span>{isMobile ? '👆 Drag' : '🖱️ Left Click + Drag'}</span>
           <span className="w-1 h-1 rounded-full bg-white/20"></span>
-          <span>⚡ Scroll to Zoom</span>
+          <span>{isMobile ? '🤏 Pinch' : '⚡ Scroll'}</span>
           <span className="w-1 h-1 rounded-full bg-white/20"></span>
-          <span>🎯 Target Car Parts to Focus</span>
+          <span>🎯 Tap Parts</span>
         </div>
       )}
 

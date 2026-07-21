@@ -128,47 +128,47 @@ export function DriverProfileModal({
               {/* Profile Header */}
               <div>
                 <div className="flex items-center gap-2">
-                  <span className="font-mono-numbers font-black text-lg text-text-secondary">#{Driver.permanentNumber}</span>
+                  <span className="font-mono-numbers font-black text-lg text-text-primary">#{Driver.permanentNumber}</span>
                   <span className="text-lg leading-none select-none">{flag}</span>
                 </div>
-                <h3 className="text-2xl font-bold text-text-primary mt-1 font-display tracking-tight leading-tight">
+                <h3 className="text-2xl md:text-3xl font-black text-text-primary mt-1 font-display tracking-tight leading-tight">
                   {Driver.givenName} {Driver.familyName}
                 </h3>
-                <p className="text-xs font-semibold uppercase tracking-widest mt-1" style={{ color: colorInfo.color }}>
+                <p className="text-[10px] md:text-xs font-bold uppercase tracking-widest mt-1.5" style={{ color: colorInfo.color }}>
                   {wikiSummary?.description || `${Driver.nationality} Racing Driver`}
                 </p>
               </div>
 
               {/* Biography Extract */}
               <div className="border-t border-border pt-3">
-                <h4 className="text-[9px] font-extrabold uppercase text-text-secondary tracking-widest mb-2">Biography</h4>
+                <h4 className="text-[10px] font-black uppercase text-text-primary tracking-widest mb-2">Biography</h4>
                 {loadingBio ? (
                   <div className="h-16 flex items-center justify-center">
                     <div className="w-6 h-6 border-2 border-border/20 border-t-[#ff1801] rounded-full animate-spin"></div>
                   </div>
                 ) : (
-                  <p className="text-xs text-text-secondary leading-relaxed max-h-[140px] overflow-y-auto pr-1 text-justify">
+                  <p className="text-[11px] md:text-xs text-text-primary leading-relaxed max-h-[140px] overflow-y-auto pr-1 text-justify opacity-90">
                     {wikiSummary?.extract || 'No biographical records loaded in telemetry logs.'}
                   </p>
                 )}
               </div>
 
               {/* Stats Cards */}
-              <div className="grid grid-cols-3 gap-2.5 border-t border-border pt-4">
-                <div className="bg-bg-primary border border-border rounded-xl p-3 text-center">
-                  <User className="w-3.5 h-3.5 text-text-secondary mx-auto mb-1" />
-                  <span className="text-[8px] uppercase tracking-wider text-text-secondary font-bold">Standing</span>
-                  <p className="text-sm font-bold text-[#ff1801] font-mono-numbers mt-1.5">P{position}</p>
+              <div className="grid grid-cols-3 gap-2 md:gap-2.5 border-t border-border pt-4">
+                <div className="bg-white/5 dark:bg-white/10 border border-border/50 rounded-xl p-2.5 md:p-3 text-center shadow-sm backdrop-blur-sm">
+                  <User className="w-4 h-4 text-text-primary mx-auto mb-1" />
+                  <span className="text-[9px] uppercase tracking-wider text-text-primary font-bold">Standing</span>
+                  <p className="text-sm md:text-base font-black text-[#ff1801] font-mono-numbers mt-1.5">P{position}</p>
                 </div>
-                <div className="bg-bg-primary border border-border rounded-xl p-3 text-center">
-                  <Trophy className="w-3.5 h-3.5 text-text-secondary mx-auto mb-1" />
-                  <span className="text-[8px] uppercase tracking-wider text-text-secondary font-bold">Wins</span>
-                  <p className="text-sm font-bold text-text-primary font-mono-numbers mt-1.5">{wins}</p>
+                <div className="bg-white/5 dark:bg-white/10 border border-border/50 rounded-xl p-2.5 md:p-3 text-center shadow-sm backdrop-blur-sm">
+                  <Trophy className="w-4 h-4 text-text-primary mx-auto mb-1" />
+                  <span className="text-[9px] uppercase tracking-wider text-text-primary font-bold">Wins</span>
+                  <p className="text-sm md:text-base font-black text-text-primary font-mono-numbers mt-1.5">{wins}</p>
                 </div>
-                <div className="bg-bg-primary border border-border rounded-xl p-3 text-center">
-                  <Award className="w-3.5 h-3.5 text-text-secondary mx-auto mb-1" />
-                  <span className="text-[8px] uppercase tracking-wider text-text-secondary font-bold">Points</span>
-                  <p className="text-sm font-bold text-text-primary font-mono-numbers mt-1.5">{points}</p>
+                <div className="bg-white/5 dark:bg-white/10 border border-border/50 rounded-xl p-2.5 md:p-3 text-center shadow-sm backdrop-blur-sm">
+                  <Award className="w-4 h-4 text-text-primary mx-auto mb-1" />
+                  <span className="text-[9px] uppercase tracking-wider text-text-primary font-bold">Points</span>
+                  <p className="text-sm md:text-base font-black text-text-primary font-mono-numbers mt-1.5">{points}</p>
                 </div>
               </div>
 
