@@ -19,7 +19,7 @@ export function RaceCalendar({ races, onSelectRace }: RaceCalendarProps) {
         <h3 className="font-extrabold text-sm uppercase tracking-widest text-[#ff1801] font-display">F1 Official Race Schedule</h3>
       </div>
 
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 mt-1 relative z-10 max-h-[60vh] overflow-y-auto pr-1">
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 mt-1 relative z-10 lg:max-h-[60vh] overflow-y-auto pr-1">
         {races.map((race) => {
           const raceDateTime = new Date(`${race.date}T${race.time || '12:00:00Z'}`);
           const isCompleted = raceDateTime < currentDate;

@@ -301,7 +301,7 @@ function App() {
   const activePartInfo = selectedPart ? PART_DETAILS[selectedPart] : null;
 
   return (
-    <div className="app-container bg-[#060608] text-white flex flex-col relative w-full min-h-screen overflow-hidden">
+    <div className={`app-container bg-[#060608] text-white flex flex-col relative w-full min-h-screen ${activeTab === 'dashboard' ? 'overflow-hidden' : 'overflow-y-auto'}`}>
       
       {/* 3D Scene Wrapper - Absolute Background */}
       <div className="absolute inset-0 w-full h-full z-0">
@@ -472,7 +472,7 @@ function App() {
               animate={{ opacity: 1, y: 0 }}
               exit={{ opacity: 0, y: 30 }}
               transition={{ duration: 0.35 }}
-              className="w-full max-w-[1400px] mx-auto pointer-events-auto mt-6 mb-6 max-h-[75vh]"
+              className="w-full max-w-[1400px] mx-auto pointer-events-auto mt-6 mb-6 lg:max-h-[75vh]"
             >
               {activeTab === 'standings' && (
                 <StandingsTable

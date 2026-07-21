@@ -43,7 +43,7 @@ export function DriverRoster({ driverStandings, getDriverDetails, onSelectDriver
         </div>
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 relative z-10 max-h-[60vh] overflow-y-auto pr-1">
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 relative z-10 lg:max-h-[60vh] overflow-y-auto pr-1">
         {getFilteredDrivers().map(item => {
           const colorInfo = getDriverDetails(item.Driver.code, item.Constructors[0]?.constructorId, item.Driver.url);
           const championships = CHAMPIONSHIPS_MAP[item.Driver.driverId] || 0;

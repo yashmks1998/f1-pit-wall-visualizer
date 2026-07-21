@@ -132,7 +132,7 @@ export function RaceDetailsModal({
         animate={{ scale: 1, opacity: 1 }}
         exit={{ scale: 0.9, opacity: 0 }}
         transition={{ type: 'spring', damping: 25, stiffness: 250 }}
-        className="w-full max-w-4xl bg-[#0d0d14] rounded-3xl border border-white/10 shadow-[0_20px_50px_rgba(0,0,0,0.8)] overflow-hidden relative z-10"
+        className="w-full max-w-4xl bg-[#0d0d14] rounded-3xl border border-white/10 shadow-[0_20px_50px_rgba(0,0,0,0.8)] overflow-y-auto max-h-[90vh] md:overflow-hidden relative z-10"
       >
         {/* Decorative Top Accent Banner */}
         <div className="absolute top-0 left-0 right-0 h-1.5 bg-gradient-to-r from-red-600 via-[#ff1801] to-blue-600"></div>

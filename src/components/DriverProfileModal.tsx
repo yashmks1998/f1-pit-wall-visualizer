@@ -75,7 +75,7 @@ export function DriverProfileModal({
         animate={{ scale: 1, opacity: 1 }}
         exit={{ scale: 0.9, opacity: 0 }}
         transition={{ type: 'spring', damping: 25, stiffness: 250 }}
-        className="w-full max-w-2xl bg-[#0d0d14] rounded-3xl border border-white/10 shadow-[0_20px_50px_rgba(0,0,0,0.8)] overflow-hidden relative z-10"
+        className="w-full max-w-2xl bg-[#0d0d14] rounded-3xl border border-white/10 shadow-[0_20px_50px_rgba(0,0,0,0.8)] overflow-y-auto max-h-[90vh] md:overflow-hidden relative z-10"
       >
         {/* Glow Accent by Team Color */}
         <div 

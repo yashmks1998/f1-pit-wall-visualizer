@@ -84,14 +84,14 @@ export function StandingsTable({
       </div>
 
       {standingsType === 'drivers' ? (
-        <div className="table-container max-h-[60vh] overflow-y-auto pr-1">
+        <div className="table-container lg:max-h-[60vh] overflow-y-auto pr-1">
           <table className="f1-table w-full">
             <thead>
               <tr className="border-b border-white/10">
                 <th className="cell-pos py-3 text-left text-xs uppercase text-gray-400 font-extrabold tracking-wider">Pos</th>
                 <th colSpan={2} className="py-3 text-left text-xs uppercase text-gray-400 font-extrabold tracking-wider">Driver</th>
-                <th className="py-3 text-left text-xs uppercase text-gray-400 font-extrabold tracking-wider">Constructor</th>
-                <th className="cell-wins py-3 text-center text-xs uppercase text-gray-400 font-extrabold tracking-wider">Wins</th>
+                <th className="py-3 text-left text-xs uppercase text-gray-400 font-extrabold tracking-wider hidden sm:table-cell">Constructor</th>
+                <th className="cell-wins py-3 text-center text-xs uppercase text-gray-400 font-extrabold tracking-wider hidden sm:table-cell">Wins</th>
                 <th className="cell-pts py-3 text-right text-xs uppercase text-gray-400 font-extrabold tracking-wider">Points</th>
               </tr>
             </thead>
@@ -114,10 +114,10 @@ export function StandingsTable({
                       {standing.Driver.givenName} {standing.Driver.familyName}
                       <span className="ml-2 text-base select-none">{FLAG_MAP[standing.Driver.nationality] || ''}</span>
                     </td>
-                    <td className="cell-team py-4 text-gray-300 text-xs font-medium">
+                    <td className="cell-team py-4 text-gray-300 text-xs font-medium hidden sm:table-cell">
                       {standing.Constructors[0]?.name || 'N/A'}
                     </td>
-                    <td className="cell-wins py-4 text-center text-sm font-mono-numbers text-gray-300">
+                    <td className="cell-wins py-4 text-center text-sm font-mono-numbers text-gray-300 hidden sm:table-cell">
                       {standing.wins}
                     </td>
                     <td className="cell-pts py-4 text-right text-sm font-bold font-mono-numbers text-[#ff1801]">
@@ -135,14 +135,14 @@ export function StandingsTable({
           </table>
         </div>
       ) : (
-        <div className="table-container max-h-[60vh] overflow-y-auto pr-1">
+        <div className="table-container lg:max-h-[60vh] overflow-y-auto pr-1">
           <table className="f1-table w-full">
             <thead>
               <tr className="border-b border-white/10">
                 <th className="cell-pos py-3 text-left text-xs uppercase text-gray-400 font-extrabold tracking-wider">Pos</th>
                 <th colSpan={2} className="py-3 text-left text-xs uppercase text-gray-400 font-extrabold tracking-wider">Constructor</th>
-                <th className="py-3 text-left text-xs uppercase text-gray-400 font-extrabold tracking-wider">Nationality</th>
-                <th className="cell-wins py-3 text-center text-xs uppercase text-gray-400 font-extrabold tracking-wider">Wins</th>
+                <th className="py-3 text-left text-xs uppercase text-gray-400 font-extrabold tracking-wider hidden sm:table-cell">Nationality</th>
+                <th className="cell-wins py-3 text-center text-xs uppercase text-gray-400 font-extrabold tracking-wider hidden sm:table-cell">Wins</th>
                 <th className="cell-pts py-3 text-right text-xs uppercase text-gray-400 font-extrabold tracking-wider">Points</th>
               </tr>
             </thead>
@@ -164,10 +164,10 @@ export function StandingsTable({
                     <td className="cell-name py-4 text-sm font-semibold text-white group-hover:text-[#ff1801] transition-all">
                       {standing.Constructor.name}
                     </td>
-                    <td className="py-4 text-gray-300 text-xs font-medium">
+                    <td className="py-4 text-gray-300 text-xs font-medium hidden sm:table-cell">
                       {standing.Constructor.nationality}
                     </td>
-                    <td className="cell-wins py-4 text-center text-sm font-mono-numbers text-gray-300">
+                    <td className="cell-wins py-4 text-center text-sm font-mono-numbers text-gray-300 hidden sm:table-cell">
                       {standing.wins}
                     </td>
                     <td className="cell-pts py-4 text-right text-sm font-bold font-mono-numbers text-[#ff1801]">

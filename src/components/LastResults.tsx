@@ -40,17 +40,17 @@ export function LastResults({ lastRaceResults, getDriverDetails, onSelectDriver 
         </p>
       </div>
 
-      <div className="table-container max-h-[60vh] overflow-y-auto pr-1 relative z-10">
+      <div className="table-container lg:max-h-[60vh] overflow-y-auto pr-1 relative z-10">
         <table className="f1-table w-full">
           <thead>
             <tr className="border-b border-white/10 text-gray-400 bg-white/[0.01]">
               <th className="cell-pos py-3 pl-4 text-xs font-bold uppercase tracking-wider">Pos</th>
               <th colSpan={2} className="py-3 text-xs font-bold uppercase tracking-wider">Driver</th>
-              <th className="py-3 text-xs font-bold uppercase tracking-wider">Constructor</th>
-              <th className="py-3 text-center text-xs font-bold uppercase tracking-wider">Grid Start</th>
-              <th className="py-3 text-center text-xs font-bold uppercase tracking-wider">Laps</th>
-              <th className="py-3 text-center text-xs font-bold uppercase tracking-wider">Time/Status</th>
-              <th className="py-3 text-center text-xs font-bold uppercase tracking-wider">Fastest Lap</th>
+              <th className="py-3 text-xs font-bold uppercase tracking-wider hidden sm:table-cell">Constructor</th>
+              <th className="py-3 text-center text-xs font-bold uppercase tracking-wider hidden md:table-cell">Grid Start</th>
+              <th className="py-3 text-center text-xs font-bold uppercase tracking-wider hidden lg:table-cell">Laps</th>
+              <th className="py-3 text-center text-xs font-bold uppercase tracking-wider hidden sm:table-cell">Time/Status</th>
+              <th className="py-3 text-center text-xs font-bold uppercase tracking-wider hidden lg:table-cell">Fastest Lap</th>
               <th className="cell-pts py-3 pr-4 text-right text-xs font-bold uppercase tracking-wider">Points</th>
             </tr>
           </thead>
@@ -77,11 +77,11 @@ export function LastResults({ lastRaceResults, getDriverDetails, onSelectDriver 
                       <span className="ml-2.5 text-[8px] font-black bg-[#ff1801]/25 text-[#ff1801] px-1.5 py-0.5 rounded italic uppercase tracking-wider border border-[#ff1801]/30">⏱️ FASTEST</span>
                     )}
                   </td>
-                  <td className="cell-team py-4 text-gray-300 text-xs font-medium">{item.Constructor.name}</td>
-                  <td className="py-4 text-center text-xs font-mono-numbers text-gray-300">P{item.grid}</td>
-                  <td className="py-4 text-center text-xs font-mono-numbers text-gray-300">{item.laps}</td>
-                  <td className="py-4 text-center text-xs font-mono-numbers text-gray-400">{item.Time?.time || item.status}</td>
-                  <td className="py-4 text-center text-xs font-mono-numbers text-gray-400">{item.FastestLap?.Time?.time || '-'}</td>
+                  <td className="cell-team py-4 text-gray-300 text-xs font-medium hidden sm:table-cell">{item.Constructor.name}</td>
+                  <td className="py-4 text-center text-xs font-mono-numbers text-gray-300 hidden md:table-cell">P{item.grid}</td>
+                  <td className="py-4 text-center text-xs font-mono-numbers text-gray-300 hidden lg:table-cell">{item.laps}</td>
+                  <td className="py-4 text-center text-xs font-mono-numbers text-gray-400 hidden sm:table-cell">{item.Time?.time || item.status}</td>
+                  <td className="py-4 text-center text-xs font-mono-numbers text-gray-400 hidden lg:table-cell">{item.FastestLap?.Time?.time || '-'}</td>
                   <td className="cell-pts py-4 pr-4 text-right font-mono-numbers text-sm font-bold text-[#ff1801]">{item.points} PTS</td>
                 </tr>
               );
