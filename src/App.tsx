@@ -28,6 +28,7 @@ import { LastResults } from './components/LastResults';
 import { DriverProfileModal } from './components/DriverProfileModal';
 import { RaceDetailsModal } from './components/RaceDetailsModal';
 import { ConstructorDetailsModal } from './components/ConstructorDetailsModal';
+import { createPortal } from 'react-dom';
 
 // Types & Constants
 import { DriverStanding, ConstructorStanding, Race, RaceResult, OpenF1Driver } from './types/f1';
@@ -336,7 +337,7 @@ function App() {
 
   return (
     <div className={`app-container bg-[#060608] text-white flex flex-col relative w-full min-h-dvh ${
-      (activeTab === 'dashboard' && !isMobile) ? 'overflow-hidden' : 'overflow-y-auto'
+      activeTab === 'dashboard' ? 'overflow-hidden' : 'overflow-y-auto'
     }`}>
       
       {/* Apple Style Product Title Overlay */}
@@ -693,36 +694,39 @@ function App() {
 
       </div>
 
-      {/* ── Detail Modals layer ── */}
-      <AnimatePresence>
-        {selectedDriverId && (
-          <DriverProfileModal
-            driverId={selectedDriverId}
-            driverStandings={driverStandings}
-            getDriverDetails={getDriverDetails}
-            onClose={() => setSelectedDriverId(null)}
-          />
-        )}
+      {/* ── Detail Modals layer (Portal: renders at document.body to avoid stacking context trap) ── */}
+      {createPortal(
+        <AnimatePresence>
+          {selectedDriverId && (
+            <DriverProfileModal
+              driverId={selectedDriverId}
+              driverStandings={driverStandings}
+              getDriverDetails={getDriverDetails}
+              onClose={() => setSelectedDriverId(null)}
+            />
+          )}
 
-        {selectedRaceRound && (
-          <RaceDetailsModal
-            round={selectedRaceRound}
-            year={selectedYear}
-            races={races}
-            getDriverDetails={getDriverDetails}
-            onClose={() => setSelectedRaceRound(null)}
-          />
-        )}
+          {selectedRaceRound && (
+            <RaceDetailsModal
+              round={selectedRaceRound}
+              year={selectedYear}
+              races={races}
+              getDriverDetails={getDriverDetails}
+              onClose={() => setSelectedRaceRound(null)}
+            />
+          )}
 
-        {selectedConstructorId && (
-          <ConstructorDetailsModal
-            constructorId={selectedConstructorId}
-            constructorStandings={constructorStandings}
-            driverStandings={driverStandings}
-            onClose={() => setSelectedConstructorId(null)}
-          />
-        )}
-      </AnimatePresence>
+          {selectedConstructorId && (
+            <ConstructorDetailsModal
+              constructorId={selectedConstructorId}
+              constructorStandings={constructorStandings}
+              driverStandings={driverStandings}
+              onClose={() => setSelectedConstructorId(null)}
+            />
+          )}
+        </AnimatePresence>,
+        document.body
+      )}
 
     </div>
   );
