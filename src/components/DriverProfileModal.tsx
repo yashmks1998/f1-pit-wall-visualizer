@@ -1,9 +1,8 @@
 import { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
-import { X, Trophy, Award, Calendar, Hash, Globe, User } from 'lucide-react';
+import { X, Trophy, Award, User, Calendar, Globe, Hash } from 'lucide-react';
 import { DriverStanding } from '../types/f1';
 import { FLAG_MAP } from '../utils/f1Constants';
-import { useMediaQuery } from '../hooks/useMediaQuery';
 
 interface DriverProfileModalProps {
   driverId: string;
@@ -14,9 +13,7 @@ interface DriverProfileModalProps {
 
 interface WikiSummary {
   extract?: string;
-  thumbnail?: {
-    source: string;
-  };
+  thumbnail?: { source: string };
   description?: string;
 }
 
@@ -28,13 +25,14 @@ export function DriverProfileModal({
 }: DriverProfileModalProps) {
   const [wikiSummary, setWikiSummary] = useState<WikiSummary | null>(null);
   const [loadingBio, setLoadingBio] = useState(false);
-  const isMobile = useMediaQuery('(max-width: 768px)');
+
+  // Determine mobile purely via window.innerWidth so it's reliable
+  const isMobileNow = typeof window !== 'undefined' && window.innerWidth < 768;
 
   const standing = driverStandings.find(s => s.Driver.driverId === driverId);
 
   useEffect(() => {
     if (!standing) return;
-
     const fetchWikiBio = async () => {
       setLoadingBio(true);
       try {
@@ -53,7 +51,6 @@ export function DriverProfileModal({
         setLoadingBio(false);
       }
     };
-
     fetchWikiBio();
   }, [standing]);
 
@@ -63,142 +60,265 @@ export function DriverProfileModal({
   const constructor = Constructors[0];
   const colorInfo = getDriverDetails(Driver.code, constructor?.constructorId, Driver.url);
   const flag = FLAG_MAP[Driver.nationality] || '';
-
-  // Use Wikipedia image if available, fallback to headshot URL
   const heroImage = wikiSummary?.thumbnail?.source || colorInfo.headshot;
 
   return (
-    <div className="fixed inset-0 z-50 flex items-end md:items-center justify-center p-0 md:p-4 bg-black/60 dark:bg-black/80 backdrop-blur-md">
-      {/* Click outside to close */}
-      <div className="absolute inset-0" onClick={onClose}></div>
-
+    // Overlay — always fixed, always full viewport, always on top
+    <div
+      style={{
+        position: 'fixed',
+        inset: 0,
+        top: 0,
+        left: 0,
+        right: 0,
+        bottom: 0,
+        zIndex: 9999,
+        display: 'flex',
+        alignItems: isMobileNow ? 'flex-end' : 'center',
+        justifyContent: 'center',
+        backgroundColor: 'rgba(0,0,0,0.7)',
+        backdropFilter: 'blur(8px)',
+        WebkitBackdropFilter: 'blur(8px)',
+        padding: isMobileNow ? 0 : '1rem',
+      }}
+      onClick={onClose}
+    >
       <motion.div
-        initial={isMobile ? { y: '100%' } : { scale: 0.95, opacity: 0 }}
-        animate={isMobile ? { y: 0 } : { scale: 1, opacity: 1 }}
-        exit={isMobile ? { y: '100%' } : { scale: 0.95, opacity: 0 }}
-        transition={{ type: 'spring', damping: 26, stiffness: 240 }}
-        className="w-full max-h-[90dvh] md:max-h-none md:h-auto md:max-w-2xl bg-white dark:bg-[#0a0a0a] rounded-t-[32px] md:rounded-3xl border-t md:border-t-0 md:border border-gray-200 dark:border-white/10 shadow-lg overflow-y-auto md:overflow-hidden relative z-10 p-0"
+        initial={{ y: isMobileNow ? '100%' : 0, opacity: isMobileNow ? 1 : 0, scale: isMobileNow ? 1 : 0.95 }}
+        animate={{ y: 0, opacity: 1, scale: 1 }}
+        exit={{ y: isMobileNow ? '100%' : 0, opacity: isMobileNow ? 1 : 0, scale: isMobileNow ? 1 : 0.95 }}
+        transition={{ type: 'spring', damping: 28, stiffness: 260 }}
+        onClick={(e) => e.stopPropagation()}
+        style={{
+          width: '100%',
+          maxWidth: isMobileNow ? '100%' : '680px',
+          maxHeight: isMobileNow ? '90dvh' : '85dvh',
+          overflowY: 'auto',
+          position: 'relative',
+          backgroundColor: 'var(--modal-bg, #ffffff)',
+          borderRadius: isMobileNow ? '24px 24px 0 0' : '24px',
+          border: '1px solid rgba(255,255,255,0.12)',
+          boxShadow: '0 32px 64px rgba(0,0,0,0.5)',
+        }}
+        className="dark:[--modal-bg:#0f0f0f] [--modal-bg:#ffffff]"
       >
-        {/* Glow Accent by Team Color */}
-        <div 
-          className="absolute -top-32 -left-32 w-64 h-64 blur-3xl pointer-events-none rounded-full opacity-10"
-          style={{ backgroundColor: colorInfo.color }}
-        ></div>
+        {/* Glow accent */}
+        <div
+          style={{
+            position: 'absolute',
+            top: -80,
+            left: -80,
+            width: 200,
+            height: 200,
+            borderRadius: '50%',
+            backgroundColor: colorInfo.color,
+            filter: 'blur(60px)',
+            opacity: 0.15,
+            pointerEvents: 'none',
+          }}
+        />
 
         {/* Drag handle for mobile */}
-        {isMobile && (
-          <div className="w-12 h-1 bg-gray-200 dark:bg-white/20 rounded-full mx-auto mt-3 mb-1 cursor-pointer" onClick={onClose}></div>
+        {isMobileNow && (
+          <div
+            style={{
+              width: 48,
+              height: 4,
+              borderRadius: 9999,
+              backgroundColor: 'rgba(150,150,150,0.4)',
+              margin: '12px auto 4px',
+              cursor: 'pointer',
+            }}
+            onClick={onClose}
+          />
         )}
 
-        {/* Close Button */}
-        <button 
+        {/* Close button */}
+        <button
           onClick={onClose}
-          className="absolute top-4 right-4 p-2 bg-gray-100 dark:bg-white/5 hover:bg-gray-200 dark:hover:bg-white/10 text-gray-500 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-100 rounded-full border border-gray-200 dark:border-white/10 transition-all z-20"
+          style={{
+            position: 'absolute',
+            top: 16,
+            right: 16,
+            zIndex: 10,
+            padding: '8px',
+            borderRadius: '50%',
+            border: '1px solid rgba(128,128,128,0.3)',
+            background: 'rgba(128,128,128,0.1)',
+            cursor: 'pointer',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            color: '#888',
+          }}
         >
-          <X className="w-4 h-4" />
+          <X size={16} />
         </button>
 
-        <div className="flex flex-col md:flex-row relative">
-          
-          {/* Driver Portrait Section */}
-          <div className="md:w-2/5 bg-gray-50 dark:bg-black p-8 flex flex-col items-center justify-center relative border-b md:border-b-0 md:border-r border-gray-200 dark:border-white/10 min-h-[250px]">
-            <div className="w-36 h-36 rounded-2xl overflow-hidden border border-gray-200 dark:border-white/10 bg-white dark:bg-[#0a0a0a] p-1 relative z-10 flex items-center justify-center shadow-sm">
-              <img 
-                src={heroImage} 
-                alt={Driver.familyName} 
-                className="w-full h-full object-cover rounded-xl"
-                onError={(e) => {
-                  (e.target as HTMLImageElement).src = colorInfo.headshot;
-                }}
+        {/* Content layout */}
+        <div style={{ display: 'flex', flexDirection: isMobileNow ? 'column' : 'row' }}>
+
+          {/* Portrait section */}
+          <div
+            style={{
+              padding: '2rem 1.5rem',
+              display: 'flex',
+              flexDirection: 'column',
+              alignItems: 'center',
+              justifyContent: 'center',
+              gap: '0.75rem',
+              borderBottom: isMobileNow ? '1px solid rgba(128,128,128,0.2)' : 'none',
+              borderRight: isMobileNow ? 'none' : '1px solid rgba(128,128,128,0.2)',
+              minWidth: isMobileNow ? 'auto' : '220px',
+              position: 'relative',
+            }}
+          >
+            {/* Driver photo */}
+            <div
+              style={{
+                width: isMobileNow ? 96 : 128,
+                height: isMobileNow ? 96 : 128,
+                borderRadius: 16,
+                overflow: 'hidden',
+                border: `2px solid ${colorInfo.color}40`,
+                flexShrink: 0,
+              }}
+            >
+              <img
+                src={heroImage}
+                alt={Driver.familyName}
+                style={{ width: '100%', height: '100%', objectFit: 'cover' }}
+                onError={(e) => { (e.target as HTMLImageElement).src = colorInfo.headshot; }}
               />
             </div>
-            
-            <span 
-              className="absolute bottom-4 left-1/2 -translate-x-1/2 text-[10px] font-black px-3.5 py-1 rounded-full text-white uppercase tracking-widest shadow-sm font-sans"
-              style={{ backgroundColor: colorInfo.color }}
+
+            {/* Team badge */}
+            <span
+              style={{
+                fontSize: 10,
+                fontWeight: 800,
+                padding: '4px 12px',
+                borderRadius: 9999,
+                color: '#fff',
+                backgroundColor: colorInfo.color,
+                textTransform: 'uppercase',
+                letterSpacing: '0.08em',
+              }}
             >
               {constructor?.name || 'F1 Team'}
             </span>
           </div>
 
-          {/* Details Section */}
-          <div className="md:w-3/5 p-8 flex flex-col justify-between max-h-[60vh] md:max-h-[80vh] overflow-y-auto">
-            <div className="flex flex-col gap-4">
-              
-              {/* Profile Header */}
-              <div>
-                <div className="flex items-center gap-2">
-                  <span className="font-mono-numbers font-black text-lg text-gray-500 dark:text-gray-400">#{Driver.permanentNumber}</span>
-                  <span className="text-lg leading-none select-none">{flag}</span>
-                </div>
-                <h3 className="text-2xl md:text-3xl font-black text-gray-900 dark:text-gray-100 mt-1 font-display tracking-tight leading-tight">
-                  {Driver.givenName} {Driver.familyName}
-                </h3>
-                <p className="text-[10px] md:text-xs font-bold uppercase tracking-widest mt-1.5" style={{ color: colorInfo.color }}>
-                  {wikiSummary?.description || `${Driver.nationality} Racing Driver`}
-                </p>
+          {/* Info section */}
+          <div
+            style={{
+              flex: 1,
+              padding: '1.5rem',
+              display: 'flex',
+              flexDirection: 'column',
+              gap: '1rem',
+              minWidth: 0,
+            }}
+          >
+            {/* Name & number */}
+            <div>
+              <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                <span style={{ fontFamily: 'monospace', fontWeight: 900, fontSize: 16, color: '#888' }}>
+                  #{Driver.permanentNumber}
+                </span>
+                <span style={{ fontSize: 20 }}>{flag}</span>
               </div>
-
-              {/* Biography Extract */}
-              <div className="border-t border-gray-200 dark:border-white/10 pt-3">
-                <h4 className="text-[10px] font-black uppercase text-gray-900 dark:text-gray-100 tracking-widest mb-2">Biography</h4>
-                {loadingBio ? (
-                  <div className="h-16 flex items-center justify-center">
-                    <div className="w-6 h-6 border-2 border-gray-200/20 dark:border-white/10 border-t-[#ff1801] rounded-full animate-spin"></div>
-                  </div>
-                ) : (
-                  <p className="text-[11px] md:text-xs text-gray-700 dark:text-gray-300 leading-relaxed max-h-[140px] overflow-y-auto pr-1 text-justify opacity-90">
-                    {wikiSummary?.extract || 'No biographical records loaded in telemetry logs.'}
-                  </p>
-                )}
-              </div>
-
-              {/* Stats Cards */}
-              <div className="grid grid-cols-3 gap-2 md:gap-2.5 border-t border-gray-200 dark:border-white/10 pt-4">
-                <div className="bg-gray-50 dark:bg-white/5 border border-gray-200 dark:border-white/10 rounded-xl p-2.5 md:p-3 text-center shadow-sm backdrop-blur-sm">
-                  <User className="w-4 h-4 text-gray-500 dark:text-gray-400 mx-auto mb-1" />
-                  <span className="text-[9px] uppercase tracking-wider text-gray-500 dark:text-gray-400 font-bold">Standing</span>
-                  <p className="text-sm md:text-base font-black text-[#ff1801] font-mono-numbers mt-1.5">P{position}</p>
-                </div>
-                <div className="bg-gray-50 dark:bg-white/5 border border-gray-200 dark:border-white/10 rounded-xl p-2.5 md:p-3 text-center shadow-sm backdrop-blur-sm">
-                  <Trophy className="w-4 h-4 text-gray-500 dark:text-gray-400 mx-auto mb-1" />
-                  <span className="text-[9px] uppercase tracking-wider text-gray-500 dark:text-gray-400 font-bold">Wins</span>
-                  <p className="text-sm md:text-base font-black text-gray-900 dark:text-gray-100 font-mono-numbers mt-1.5">{wins}</p>
-                </div>
-                <div className="bg-gray-50 dark:bg-white/5 border border-gray-200 dark:border-white/10 rounded-xl p-2.5 md:p-3 text-center shadow-sm backdrop-blur-sm">
-                  <Award className="w-4 h-4 text-gray-500 dark:text-gray-400 mx-auto mb-1" />
-                  <span className="text-[9px] uppercase tracking-wider text-gray-500 dark:text-gray-400 font-bold">Points</span>
-                  <p className="text-sm md:text-base font-black text-gray-900 dark:text-gray-100 font-mono-numbers mt-1.5">{points}</p>
-                </div>
-              </div>
-
+              <h3
+                style={{
+                  margin: '4px 0 0',
+                  fontSize: isMobileNow ? 22 : 28,
+                  fontWeight: 900,
+                  letterSpacing: '-0.03em',
+                  lineHeight: 1.1,
+                  color: 'inherit',
+                }}
+                className="text-gray-900 dark:text-gray-100"
+              >
+                {Driver.givenName} {Driver.familyName}
+              </h3>
+              <p style={{ marginTop: 4, fontSize: 11, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.08em', color: colorInfo.color }}>
+                {wikiSummary?.description || `${Driver.nationality} Racing Driver`}
+              </p>
             </div>
 
-            {/* Profile Footer Metrics */}
-            <div className="border-t border-gray-200 dark:border-white/10 pt-4 mt-6 grid grid-cols-2 gap-y-2 gap-x-4 text-xs font-semibold text-gray-500 dark:text-gray-400">
-              <div className="flex items-center gap-1.5">
-                <Calendar className="w-3.5 h-3.5 text-gray-400 dark:text-gray-500" />
-                <span>Born: {new Date(Driver.dateOfBirth).toLocaleDateString([], { year: 'numeric', month: 'short', day: 'numeric' })}</span>
-              </div>
-              <div className="flex items-center gap-1.5">
-                <Globe className="w-3.5 h-3.5 text-gray-400 dark:text-gray-500" />
-                <span>Nation: {Driver.nationality}</span>
-              </div>
-              <div className="flex items-center gap-1.5 col-span-2 mt-1">
-                <Hash className="w-3.5 h-3.5 text-gray-400 dark:text-gray-500" />
-                <a 
-                  href={Driver.url} 
-                  target="_blank" 
-                  rel="noopener noreferrer" 
-                  className="text-[#ff1801] hover:underline"
+            {/* Stats row */}
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3,1fr)', gap: 8, borderTop: '1px solid rgba(128,128,128,0.2)', paddingTop: 12 }}>
+              {[
+                { icon: <User size={14} />, label: 'Standing', value: `P${position}`, accent: '#ff1801' },
+                { icon: <Trophy size={14} />, label: 'Wins', value: String(wins), accent: undefined },
+                { icon: <Award size={14} />, label: 'Points', value: String(points), accent: undefined },
+              ].map(({ icon, label, value, accent }) => (
+                <div
+                  key={label}
+                  style={{
+                    border: '1px solid rgba(128,128,128,0.2)',
+                    borderRadius: 12,
+                    padding: '10px 6px',
+                    textAlign: 'center',
+                    background: 'rgba(128,128,128,0.06)',
+                  }}
                 >
-                  Wiki Reference Log &rarr;
+                  <div style={{ display: 'flex', justifyContent: 'center', color: '#888', marginBottom: 4 }}>{icon}</div>
+                  <span style={{ display: 'block', fontSize: 9, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.06em', color: '#888' }}>{label}</span>
+                  <span style={{ display: 'block', fontSize: 16, fontWeight: 900, fontFamily: 'monospace', marginTop: 4, color: accent || 'inherit' }}
+                    className={accent ? '' : 'text-gray-900 dark:text-gray-100'}
+                  >
+                    {value}
+                  </span>
+                </div>
+              ))}
+            </div>
+
+            {/* Biography */}
+            <div style={{ borderTop: '1px solid rgba(128,128,128,0.2)', paddingTop: 12 }}>
+              <h4 style={{ fontSize: 10, fontWeight: 800, textTransform: 'uppercase', letterSpacing: '0.1em', marginBottom: 8 }}
+                className="text-gray-900 dark:text-gray-100"
+              >
+                Biography
+              </h4>
+              {loadingBio ? (
+                <div style={{ height: 48, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                  <div className="w-5 h-5 border-2 border-gray-200/20 border-t-[#ff1801] rounded-full animate-spin" />
+                </div>
+              ) : (
+                <p style={{ fontSize: 11, lineHeight: 1.65, maxHeight: 120, overflowY: 'auto', textAlign: 'justify' }}
+                  className="text-gray-700 dark:text-gray-300"
+                >
+                  {wikiSummary?.extract || 'No biographical data available.'}
+                </p>
+              )}
+            </div>
+
+            {/* Footer meta */}
+            <div style={{ borderTop: '1px solid rgba(128,128,128,0.2)', paddingTop: 12, display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 8 }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: 6 }} className="text-gray-500 dark:text-gray-400">
+                <Calendar size={12} />
+                <span style={{ fontSize: 11, fontWeight: 600 }}>
+                  Born: {new Date(Driver.dateOfBirth).toLocaleDateString([], { year: 'numeric', month: 'short', day: 'numeric' })}
+                </span>
+              </div>
+              <div style={{ display: 'flex', alignItems: 'center', gap: 6 }} className="text-gray-500 dark:text-gray-400">
+                <Globe size={12} />
+                <span style={{ fontSize: 11, fontWeight: 600 }}>Nation: {Driver.nationality}</span>
+              </div>
+              <div style={{ display: 'flex', alignItems: 'center', gap: 6, gridColumn: '1 / -1' }}>
+                <Hash size={12} className="text-gray-400" />
+                <a
+                  href={Driver.url}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  style={{ fontSize: 11, fontWeight: 600, color: '#ff1801', textDecoration: 'none' }}
+                >
+                  Wiki Reference Log →
                 </a>
               </div>
             </div>
-
           </div>
-
         </div>
       </motion.div>
     </div>
