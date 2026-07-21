@@ -107,6 +107,20 @@ function App() {
     };
   }, [mobileMenuOpen, isMobile]);
 
+  // Scroll position listener for header translucent styling
+  const [scrolled, setScrolled] = useState(false);
+  useEffect(() => {
+    const handleScroll = (e: Event) => {
+      const target = e.target as HTMLElement;
+      if (target) {
+        const scrollTop = target.scrollTop || window.scrollY;
+        setScrolled(scrollTop > 15);
+      }
+    };
+    window.addEventListener('scroll', handleScroll, true);
+    return () => window.removeEventListener('scroll', handleScroll, true);
+  }, []);
+
   // Fetch F1 Data
   useEffect(() => {
     const fetchF1Data = async () => {
@@ -349,7 +363,11 @@ function App() {
       <div className={isMobile ? 'hidden' : 'absolute inset-0 pointer-events-none z-10 bg-gradient-to-t from-[#060608]/95 via-transparent to-transparent'}></div>
 
       {/* Premium Glassmorphic Header */}
-      <header className="f1-header w-full border-b border-[#ff1801]/60 bg-black/90 backdrop-blur-md z-50 fixed top-0 left-0 px-4 md:px-6 h-16 flex items-center justify-between order-first">
+      <header className={`f1-header w-full z-50 fixed top-0 left-0 px-4 md:px-6 h-16 flex items-center justify-between transition-all duration-300 ${
+        (scrolled || mobileMenuOpen)
+          ? 'backdrop-blur-xl bg-white/75 dark:bg-black/75 border-b border-border shadow-sm'
+          : 'bg-transparent border-b border-transparent'
+      }`}>
         <div className="header-container max-w-[1600px] mx-auto w-full flex items-center justify-between">
           
           {/* Logo & Brand */}
@@ -464,11 +482,11 @@ function App() {
       <AnimatePresence>
         {mobileMenuOpen && isMobile && (
           <motion.div 
-            initial={{ opacity: 0, y: -20 }}
+            initial={{ opacity: 0, y: -10 }}
             animate={{ opacity: 1, y: 0 }}
-            exit={{ opacity: 0, y: -20 }}
-            transition={{ duration: 0.2 }}
-            className="fixed top-16 left-0 right-0 z-50 bg-[#0d0d14]/95 border-b border-[#ff1801]/30 backdrop-blur-lg px-6 py-6 flex flex-col gap-5 shadow-[0_15px_30px_rgba(0,0,0,0.8)] pointer-events-auto md:hidden"
+            exit={{ opacity: 0, y: -10 }}
+            transition={{ duration: 0.25, ease: [0.16, 1, 0.3, 1] }}
+            className="fixed top-16 left-0 right-0 bottom-0 z-50 bg-white/95 dark:bg-black/95 backdrop-blur-2xl px-6 py-8 flex flex-col gap-6 overflow-y-auto pointer-events-auto md:hidden border-t border-border"
           >
             {/* Season Selector */}
             <div className="flex flex-col gap-2">
@@ -513,10 +531,10 @@ function App() {
                 return (
                   <button 
                     key={tab.id}
-                    className={`flex items-center gap-3 w-full px-4 py-3 text-xs uppercase tracking-wider font-extrabold rounded-xl transition-all ${
+                    className={`flex items-center gap-3 w-full px-5 py-4 text-sm font-bold rounded-2xl transition-all border pointer-events-auto ${
                       isActive 
-                        ? 'bg-[#ff1801] text-black shadow-[0_0_12px_var(--f1-red-glow)]' 
-                        : 'text-gray-300 bg-white/5 border border-white/5 hover:bg-white/10'
+                        ? 'bg-[#ff1801] text-white border-[#ff1801] shadow-[0_0_12px_var(--f1-red-glow)]' 
+                        : 'text-text-primary bg-bg-secondary border-border hover:bg-bg-primary'
                     }`}
                     onClick={() => {
                       setActiveTab(tab.id as any);
